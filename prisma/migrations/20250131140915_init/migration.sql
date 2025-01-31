@@ -1,0 +1,21 @@
+-- CreateTable
+CREATE TABLE "User" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "gander" TEXT,
+    "age" INTEGER,
+    "height" INTEGER,
+    "weight" INTEGER,
+    "muscle_mass" DOUBLE PRECISION,
+    "fat_mass" DOUBLE PRECISION,
+    "allergies" TEXT[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
