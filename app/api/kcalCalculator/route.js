@@ -1,9 +1,12 @@
 import { Calculation } from '../../../utils/functions/Calculation';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { weight, height, age, gender, activityLevel, goal } = body;
+    const { userId, weight, height, age, gender, activityLevel, goal } = body;
 
     if (
       !weight ||
@@ -15,6 +18,26 @@ export async function POST(req) {
     ) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ดูก่อนว่า user มีแล้วรึยัง
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ดูก่อนว่า user มี healthMetrics อยู่แล้วรึยัง
+    const existingMetrics = await prisma.healthMetrics.findUnique({
+      where: { userId: user.id },
+    });
+    if (existingMetrics) {
+      return new Response(
+        JSON.stringify({ error: 'User already has health metrics' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -43,6 +66,7 @@ export async function POST(req) {
       );
     }
 
+    // call function
     const result = Calculation({
       weight,
       height,
@@ -51,18 +75,49 @@ export async function POST(req) {
       activityLevel,
       goal,
     });
+    console.log(result);
+    if (!result) {
+      return new Response(
+        JSON.stringify({ error: 'Calculation function returned null' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
-    console.log('✅ Calculation result:', result);
+    const healthMetrics = await prisma.healthMetrics.create({
+      data: {
+        bmi: parseFloat(result.BMI),
+        bmr: parseFloat(result.BMR),
+        tdee: parseFloat(result.TDEE),
+        bodyFat: parseFloat(result.BodyFat),
+        fatMass: parseFloat(result.FatMass),
+        leanMass: parseFloat(result.LeanMass),
+        calorieSurplus: parseFloat(result.calorieSurplus),
+        userId: user.id,
+      },
+    });
+
+    const macronutrients = await prisma.macronutrients.create({
+      data: {
+        protein: parseFloat(result.macronutrients.protein),
+        fat: parseFloat(result.macronutrients.fat),
+        carbs: parseFloat(result.macronutrients.carbs),
+        healthMetricsId: healthMetrics.id, // Connect to healthMetrics
+      },
+    });
 
     return new Response(
       JSON.stringify({
         message: 'Calculation successful',
-        data: result,
+        data: {
+          ...healthMetrics,
+          macronutrients,
+        },
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Invalid request' }), {
+    console.error('Server Error:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

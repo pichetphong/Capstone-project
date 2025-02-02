@@ -14,24 +14,23 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String?
+  id        String   @id @default(uuid())
+  name      String
   email     String   @unique
   password  String
-  gender    String?
-  age       Int?
-  height    Int?
-  weight    Int?
-  BodyFat   Float?
-  FatMass   Float?
-  LeanMass  Float?
-  allergies String[]
+  age       Int
+  weight    Float
+  height    Float
+  gender    Int // 0 = female, 1 = male
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // One-to-One relation: A user has only one HealthMetrics
+  healthMetrics HealthMetrics?
 }
 
 model HealthMetrics {
-  id             String          @id @default(uuid())
+  id             String   @id @default(uuid())
   bmi            Float
   bmr            Float
   tdee           Float
@@ -39,9 +38,15 @@ model HealthMetrics {
   fatMass        Float
   leanMass       Float
   calorieSurplus Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // One-to-One relation with Macronutrients
   macronutrients Macronutrients?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+
+  // One-to-One relation with User
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
 }
 
 model Macronutrients {
@@ -52,7 +57,7 @@ model Macronutrients {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // One-to-One relation
-  kcalResult      HealthMetrics @relation(fields: [healthMetricsId], references: [id], onDelete: Cascade)
+  // One-to-One relation with HealthMetrics
+  healthMetrics   HealthMetrics @relation(fields: [healthMetricsId], references: [id], onDelete: Cascade)
   healthMetricsId String        @unique
 }
