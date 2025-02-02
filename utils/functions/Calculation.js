@@ -55,9 +55,9 @@ export const Calculation = ({
       LeanMass: LeanMass.toFixed(2),
       calorieSurplus: calorieSurplus.toFixed(2),
       macronutrients: {
-        protein: protein.toFixed(2) + ' g',
-        fat: fat.toFixed(2) + ' g',
-        carbs: carbs.toFixed(2) + ' g',
+        protein: protein.toFixed(2),
+        fat: fat.toFixed(2),
+        carbs: carbs.toFixed(2),
       },
     };
   } catch (error) {

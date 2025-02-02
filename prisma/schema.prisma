@@ -14,17 +14,45 @@ datasource db {
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  name        String?
-  email       String   @unique
-  password    String
-  gander      String?
-  age         Int?
-  height      Int?
-  weight      Int?
-  muscle_mass Float?
-  fat_mass    Float?
-  allergies   String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String?
+  email     String   @unique
+  password  String
+  gender    String?
+  age       Int?
+  height    Int?
+  weight    Int?
+  BodyFat   Float?
+  FatMass   Float?
+  LeanMass  Float?
+  allergies String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HealthMetrics {
+  id             String          @id @default(uuid())
+  bmi            Float
+  bmr            Float
+  tdee           Float
+  bodyFat        Float
+  fatMass        Float
+  leanMass       Float
+  calorieSurplus Float
+  macronutrients Macronutrients?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Macronutrients {
+  id        String   @id @default(uuid())
+  protein   Float
+  fat       Float
+  carbs     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One-to-One relation
+  kcalResult      HealthMetrics @relation(fields: [healthMetricsId], references: [id], onDelete: Cascade)
+  healthMetricsId String        @unique
 }
