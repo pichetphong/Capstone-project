@@ -6,34 +6,20 @@ const prisma = new PrismaClient();
 export async function POST(req) {
   try {
     const body = await req.json();
-    const {
-      userId,
-      weight,
-      height,
-      age,
-      gender,
-      activityLevel,
-      goal,
-      dietType,
-    } = body;
+    const { userId } = body;
 
-    if (
-      !weight ||
-      !height ||
-      !age ||
-      gender === undefined ||
-      activityLevel === undefined ||
-      goal === undefined ||
-      dietType === undefined
-    ) {
+    if (!userId) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ error: 'Missing required userId' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    // ดูก่อนว่า user มีแล้วรึยัง
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    // ดึงข้อมูล User จาก Database
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
     if (!user) {
       return new Response(JSON.stringify({ error: 'User not found' }), {
         status: 404,
@@ -41,10 +27,11 @@ export async function POST(req) {
       });
     }
 
-    // ดูก่อนว่า user มี healthMetrics อยู่แล้วรึยัง
+    // ตรวจสอบว่ามี HealthMetrics แล้วหรือยัง
     const existingMetrics = await prisma.healthMetrics.findUnique({
       where: { userId: user.id },
     });
+
     if (existingMetrics) {
       return new Response(
         JSON.stringify({ error: 'User already has health metrics' }),
@@ -52,41 +39,32 @@ export async function POST(req) {
       );
     }
 
-    if (gender !== 1 && gender !== 0) {
+    // ตรวจสอบค่า gender และ goal ว่าถูกต้องหรือไม่
+    if (user.gender !== 1 && user.gender !== 0) {
       return new Response(JSON.stringify({ error: 'gender must be 0 or 1' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const validActivityLevels = [1.2, 1.375, 1.55, 1.725, 1.9];
-    if (!validActivityLevels.includes(activityLevel)) {
+    if (user.goal !== 1 && user.goal !== 0 && user.goal !== -1) {
       return new Response(
-        JSON.stringify({
-          error: 'activityLevel must be 1.2, 1.375, 1.55, 1.725, or 1.9',
-        }),
+        JSON.stringify({ error: 'goal must be 1, 0, or -1' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
-    if (goal !== 1 && goal !== 0 && goal !== -1) {
-      return new Response(
-        JSON.stringify({ error: 'goal must be 1 , 0 , -2' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // call function
+    // ใช้ข้อมูลจาก user มาใส่ Calculation
     const result = Calculation({
-      weight,
-      height,
-      age,
-      gender,
-      activityLevel,
-      goal,
-      dietType,
+      weight: user.weight,
+      height: user.height,
+      age: user.age,
+      gender: user.gender,
+      activityLevel: user.activityLevel,
+      goal: user.goal,
+      dietType: user.dietType,
     });
-    console.log(result);
+
     if (!result) {
       return new Response(
         JSON.stringify({ error: 'Calculation function returned null' }),
@@ -94,6 +72,7 @@ export async function POST(req) {
       );
     }
 
+    // บันทึกค่า Health Metrics
     const healthMetrics = await prisma.healthMetrics.create({
       data: {
         bmi: parseFloat(result.BMI),
@@ -108,6 +87,7 @@ export async function POST(req) {
       },
     });
 
+    // บันทึก Macronutrients
     const macronutrients = await prisma.macronutrients.create({
       data: {
         protein: parseFloat(result.macronutrients.protein),
