@@ -6,7 +6,16 @@ const prisma = new PrismaClient();
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { userId, weight, height, age, gender, activityLevel, goal } = body;
+    const {
+      userId,
+      weight,
+      height,
+      age,
+      gender,
+      activityLevel,
+      goal,
+      dietType,
+    } = body;
 
     if (
       !weight ||
@@ -14,7 +23,8 @@ export async function POST(req) {
       !age ||
       gender === undefined ||
       activityLevel === undefined ||
-      goal === undefined
+      goal === undefined ||
+      dietType === undefined
     ) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
@@ -42,7 +52,7 @@ export async function POST(req) {
       );
     }
 
-    if (gender !== 0 && gender !== 1) {
+    if (gender !== 1 && gender !== 0) {
       return new Response(JSON.stringify({ error: 'gender must be 0 or 1' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
@@ -59,9 +69,9 @@ export async function POST(req) {
       );
     }
 
-    if (goal < -20 || goal > 20) {
+    if (goal !== 1 && goal !== 0 && goal !== -1) {
       return new Response(
-        JSON.stringify({ error: 'goal must be between -20% and 20%' }),
+        JSON.stringify({ error: 'goal must be 1 , 0 , -2' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
@@ -74,6 +84,7 @@ export async function POST(req) {
       gender,
       activityLevel,
       goal,
+      dietType,
     });
     console.log(result);
     if (!result) {
@@ -91,7 +102,8 @@ export async function POST(req) {
         bodyFat: parseFloat(result.BodyFat),
         fatMass: parseFloat(result.FatMass),
         leanMass: parseFloat(result.LeanMass),
-        calorieSurplus: parseFloat(result.calorieSurplus),
+        weeklySurplus: parseFloat(result.weeklySurplus),
+        dailySurplus: parseFloat(result.dailySurplus),
         userId: user.id,
       },
     });

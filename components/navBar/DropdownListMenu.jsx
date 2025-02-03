@@ -6,11 +6,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+} from '../ui/dropdown-menu';
+import { Button } from '../ui/button';
+// import { Button } from '@/ui/button';
 import UserIcon from './UserIcon';
 import Link from 'next/link';
-import { links } from '@/utils/links';
+import { links } from '../../utils/links';
 
 const DropdownListMenu = () => {
   return (

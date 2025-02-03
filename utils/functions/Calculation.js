@@ -5,6 +5,7 @@ export const Calculation = ({
   gender,
   activityLevel,
   goal,
+  dietType,
 }) => {
   if (
     !weight ||
@@ -12,7 +13,8 @@ export const Calculation = ({
     !age ||
     gender === undefined ||
     activityLevel === undefined ||
-    goal === undefined
+    goal === undefined ||
+    dietType === undefined
   ) {
     console.error('Calculation received invalid values:', {
       weight,
@@ -21,6 +23,7 @@ export const Calculation = ({
       gender,
       activityLevel,
       goal,
+      dietType,
     });
     return null;
   }
@@ -36,15 +39,50 @@ export const Calculation = ({
       BMR = 655 + 9.6 * weight + 1.8 * height - 4.7 * age;
     }
 
-    const TDEE = BMR * activityLevel;
     const BodyFat = 1.2 * BMI + 0.23 * age - 10.8 * gender - 5.4;
     const FatMass = weight * (BodyFat / 100);
     const LeanMass = weight - FatMass;
 
-    const calorieSurplus = TDEE * (1 + goal / 100);
-    const protein = 2.2 * weight;
-    const fat = (calorieSurplus * 0.25) / 9;
-    const carbs = (calorieSurplus - protein * 4 - fat * 9) / 4;
+    const TDEE = BMR * activityLevel;
+    const newTDEE = TDEE * 7;
+
+    let weeklySurplus;
+    // goal เพิ่มน้ำหนัก = 1 คงน้ำหนัก = 0 ลดน้ำหนัก = -1
+    if (goal === 1) {
+      weeklySurplus = newTDEE + 500;
+    } else if (goal === 0) {
+      weeklySurplus = newTDEE;
+    } else {
+      weeklySurplus = newTDEE - 500;
+    }
+
+    const dailySurplus = weeklySurplus / 7;
+
+    // dietType เลือก สัดส่วนของโปรตีน ไขมัน คาร์โบไฮเดรต high protein = 1, balanced = 0, low carb = -1
+    // high protein : 40 30 30
+    // balanced : 30 35 35
+    // low carb : 25 50 25
+    let protein;
+    let fat;
+    let carbs;
+    if (dietType === 1) {
+      protein = (dailySurplus * 0.4) / 4;
+      fat = (dailySurplus * 0.3) / 9;
+      carbs = (dailySurplus * 0.3) / 4;
+    } else if (dietType === 0) {
+      protein = (dailySurplus * 0.3) / 4;
+      fat = (dailySurplus * 0.35) / 9;
+      carbs = (dailySurplus * 0.35) / 4;
+    } else {
+      protein = (dailySurplus * 0.25) / 4;
+      fat = (dailySurplus * 0.5) / 9;
+      carbs = (dailySurplus * 0.25) / 4;
+    }
+
+    // const calorieSurplus = TDEE * (1 + goal / 100);
+    // const protein = 2.2 * weight;
+    // const fat = (calorieSurplus * 0.25) / 9;
+    // const carbs = (calorieSurplus - protein * 4 - fat * 9) / 4;
 
     return {
       BMI: BMI.toFixed(2),
@@ -53,7 +91,9 @@ export const Calculation = ({
       BodyFat: BodyFat.toFixed(2),
       FatMass: FatMass.toFixed(2),
       LeanMass: LeanMass.toFixed(2),
-      calorieSurplus: calorieSurplus.toFixed(2),
+      weeklySurplus: weeklySurplus.toFixed(2),
+      dailySurplus: dailySurplus.toFixed(2),
+      // calorieSurplus: calorieSurplus.toFixed(2),
       macronutrients: {
         protein: protein.toFixed(2),
         fat: fat.toFixed(2),
