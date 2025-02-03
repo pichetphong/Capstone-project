@@ -23,7 +23,7 @@ model User {
   height    Float?
   gender    Int? // 0 = female, 1 = male
   goal      Int? // -1 = lose weight, 0 = maintain weight, 1 = gain weight
-  dietType  Int? // high protein = 1, balanced = 0, low carb = -1
+  dietType  Int? // low carb = -1, balanced = 0, high protein = 1
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

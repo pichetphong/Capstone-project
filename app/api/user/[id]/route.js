@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function GET(req, context) {
-  const { id } = await context.params; // ✅ รอให้ `params` ถูก resolve ก่อนใช้
+  const { id } = await context.params;
 
   try {
     const user = await prisma.user.findUnique({
@@ -25,8 +25,62 @@ export async function GET(req, context) {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error fetching user:', error); // ✅ Log error
+    console.error('Error fetching user:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+export async function PUT(req, context) {
+  const { id } = await context.params;
+  const body = await req.json();
+
+  try {
+    // -1 = lose weight, 0 = maintain weight, 1 = gain weight
+    if (body.goal !== 1 && body.goal !== 0 && body.goal !== -1) {
+      return new Response(JSON.stringify({ error: 'Invalid goal value' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // low carb = -1, balanced = 0, high protein = 1
+    if (body.dietType !== -1 && body.dietType !== 0 && body.dietType !== 1) {
+      return new Response(JSON.stringify({ error: 'Invalid dietType value' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 0 = female, 1 = male
+    if (body.gender !== 1 && body.gender !== 0) {
+      return new Response(JSON.stringify({ error: 'Invalid gender value' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: {
+        name: body.name,
+        age: body.age,
+        weight: body.weight,
+        height: body.height,
+        goal: body.goal,
+        dietType: body.dietType,
+      },
+    });
+
+    return new Response(JSON.stringify(updatedUser), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.log('Error updating user:', error);
+    return new Response(JSON.stringify({ error: 'Failed to update user' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
