@@ -62,6 +62,23 @@ export async function PUT(req, context) {
       });
     }
 
+    // 0 = sedentary, 1 = lightly active, 2 = moderately active, 3 = very active, 4 = super active
+    if (
+      body.activityLevel !== 0 &&
+      body.activityLevel !== 1 &&
+      body.activityLevel !== 2 &&
+      body.activityLevel !== 3 &&
+      body.activityLevel !== 4
+    ) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid activityLevel value' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id },
       data: {
@@ -69,8 +86,10 @@ export async function PUT(req, context) {
         age: body.age,
         weight: body.weight,
         height: body.height,
+        gender: body.gender,
         goal: body.goal,
         dietType: body.dietType,
+        activityLevel: body.activityLevel,
       },
     });
 

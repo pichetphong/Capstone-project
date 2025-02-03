@@ -14,18 +14,19 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String?
-  email     String   @unique
-  password  String
-  age       Int?
-  weight    Float?
-  height    Float?
-  gender    Int? // 0 = female, 1 = male
-  goal      Int? // -1 = lose weight, 0 = maintain weight, 1 = gain weight
-  dietType  Int? // low carb = -1, balanced = 0, high protein = 1
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  name          String?
+  email         String   @unique
+  password      String
+  age           Int?
+  weight        Float?
+  height        Float?
+  gender        Int? // 0 = female, 1 = male
+  goal          Int? // -1 = lose weight, 0 = maintain weight, 1 = gain weight
+  dietType      Int? // low carb = -1, balanced = 0, high protein = 1
+  activityLevel Int? // 0 = sedentary, 1 = lightly active, 2 = moderately active, 3 = very active, 4 = super active
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // One-to-One relation: A user has only one HealthMetrics
   healthMetrics HealthMetrics?
