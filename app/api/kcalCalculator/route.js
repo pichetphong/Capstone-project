@@ -20,13 +20,13 @@ export async function POST(req) {
     // ตรวจสอบค่าที่จำเป็น
     if (
       !userId ||
-      typeof age === 'undefined' ||
-      typeof weight === 'undefined' ||
-      typeof height === 'undefined' ||
-      typeof gender === 'undefined' ||
-      typeof goal === 'undefined' ||
-      typeof dietType === 'undefined' ||
-      typeof activityLevel === 'undefined'
+      typeof age == null ||
+      typeof weight == null ||
+      typeof height == null ||
+      typeof gender == null ||
+      typeof goal == null ||
+      typeof dietType == null ||
+      typeof activityLevel == null
     ) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
@@ -45,18 +45,6 @@ export async function POST(req) {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
-    }
-
-    // ตรวจสอบว่าผู้ใช้มี HealthMetrics อยู่แล้วหรือไม่
-    const existingMetrics = await prisma.healthMetrics.findUnique({
-      where: { userId },
-    });
-
-    if (existingMetrics) {
-      return new Response(
-        JSON.stringify({ error: 'User already has health metrics' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
     }
 
     // เรียกใช้ Calculation
@@ -113,6 +101,17 @@ export async function POST(req) {
         fat: parseFloat(result.fat),
         carbs: parseFloat(result.carbs),
         userId: userId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 

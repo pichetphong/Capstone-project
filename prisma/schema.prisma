@@ -21,8 +21,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // One-to-One relation: A user has only one HealthMetrics
-  healthMetrics HealthMetrics?
+  // One-to-many relationship with HealthMetrics
+  healthMetrics HealthMetrics[]
 }
 
 model HealthMetrics {
@@ -48,7 +48,6 @@ model HealthMetrics {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  // One-to-One relation with User
+  userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String @unique
 }

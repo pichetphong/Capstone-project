@@ -12,7 +12,7 @@ export async function POST(req) {
     if (!name || !email || !password) {
       return new Response(
         JSON.stringify({
-          error: 'Missing required fields: email and password',
+          error: 'Missing required fields: name, email and password',
         }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
