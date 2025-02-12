@@ -93,12 +93,9 @@ export const Calculation = ({
       LeanMass: LeanMass.toFixed(2),
       weeklySurplus: weeklySurplus.toFixed(2),
       dailySurplus: dailySurplus.toFixed(2),
-      // calorieSurplus: calorieSurplus.toFixed(2),
-      macronutrients: {
-        protein: protein.toFixed(2),
-        fat: fat.toFixed(2),
-        carbs: carbs.toFixed(2),
-      },
+      protein: protein.toFixed(2),
+      fat: fat.toFixed(2),
+      carbs: carbs.toFixed(2),
     };
   } catch (error) {
     console.error('Error inside Calculation():', error);
