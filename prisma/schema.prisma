@@ -33,7 +33,7 @@ model HealthMetrics {
   gender        Int? // 0 = female, 1 = male
   goal          Int? // -1 = lose weight, 0 = maintain weight, 1 = gain weight
   dietType      Int? // low carb = -1, balanced = 0, high protein = 1
-  activityLevel Int? // 0 = sedentary, 1 = lightly active, 2 = moderately active, 3 = very active, 4 = super active
+  activityLevel Int? // 0 = sedentary / 1.2, 1 = lightly active / 1.375, 2 = moderately active / 1.55, 3 = very active / 1.725, 4 = super active / 1.9
   bmi           Float
   bmr           Float
   tdee          Float

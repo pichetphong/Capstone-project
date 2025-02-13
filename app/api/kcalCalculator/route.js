@@ -20,13 +20,13 @@ export async function POST(req) {
     // ตรวจสอบค่าที่จำเป็น
     if (
       !userId ||
-      typeof age == null ||
-      typeof weight == null ||
-      typeof height == null ||
-      typeof gender == null ||
-      typeof goal == null ||
-      typeof dietType == null ||
-      typeof activityLevel == null
+      age == null ||
+      weight == null ||
+      height == null ||
+      gender == null ||
+      goal == null ||
+      dietType == null ||
+      activityLevel == null
     ) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
@@ -47,48 +47,45 @@ export async function POST(req) {
       });
     }
 
-    // เรียกใช้ Calculation
-    let result;
-    try {
-      result = Calculation({
-        age,
-        weight,
-        height,
-        gender,
-        goal,
-        dietType,
-        activityLevel,
-      });
-    } catch (error) {
-      return new Response(
-        JSON.stringify({ error: 'Error in calculation function' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
+    console.log('Input to Calculation:', {
+      weight,
+      height,
+      age,
+      gender,
+      activityLevel,
+      goal,
+      dietType,
+    });
 
+    // เรียกใช้ Calculation
+    const result = Calculation({
+      weight,
+      height,
+      age,
+      gender,
+      activityLevel,
+      goal,
+      dietType,
+    });
+    console.log('hellooooooo', result);
     if (!result) {
+      console.error('Calculation() returned null');
       return new Response(
         JSON.stringify({ error: 'Calculation function returned null' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     // บันทึกค่า Health Metrics
     const healthMetrics = await prisma.healthMetrics.create({
       data: {
-        age,
         weight,
         height,
+        age,
         gender,
+        activityLevel,
         goal,
         dietType,
-        activityLevel,
         bmi: parseFloat(result.BMI),
         bmr: parseFloat(result.BMR),
         tdee: parseFloat(result.TDEE),
