@@ -14,26 +14,26 @@ datasource db {
 }
 
 model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // One-to-many relationship with HealthMetrics
+  healthMetrics HealthMetrics[]
+}
+
+model HealthMetrics {
   id            String   @id @default(uuid())
-  name          String?
-  email         String   @unique
-  password      String
   age           Int?
   weight        Float?
   height        Float?
   gender        Int? // 0 = female, 1 = male
   goal          Int? // -1 = lose weight, 0 = maintain weight, 1 = gain weight
   dietType      Int? // low carb = -1, balanced = 0, high protein = 1
-  activityLevel Int? // 0 = sedentary, 1 = lightly active, 2 = moderately active, 3 = very active, 4 = super active
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // One-to-One relation: A user has only one HealthMetrics
-  healthMetrics HealthMetrics?
-}
-
-model HealthMetrics {
-  id            String   @id @default(uuid())
+  activityLevel Int? // 0 = sedentary / 1.2, 1 = lightly active / 1.375, 2 = moderately active / 1.55, 3 = very active / 1.725, 4 = super active / 1.9
   bmi           Float
   bmr           Float
   tdee          Float
@@ -42,26 +42,12 @@ model HealthMetrics {
   leanMass      Float
   weeklySurplus Float
   dailySurplus  Float
+  protein       Float
+  fat           Float
+  carbs         Float
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  // One-to-One relation with Macronutrients
-  macronutrients Macronutrients?
-
-  // One-to-One relation with User
+  userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String @unique
-}
-
-model Macronutrients {
-  id        String   @id @default(uuid())
-  protein   Float
-  fat       Float
-  carbs     Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // One-to-One relation with HealthMetrics
-  healthMetrics   HealthMetrics @relation(fields: [healthMetricsId], references: [id], onDelete: Cascade)
-  healthMetricsId String        @unique
 }

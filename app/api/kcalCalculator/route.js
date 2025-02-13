@@ -6,19 +6,39 @@ const prisma = new PrismaClient();
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { userId } = body;
+    const {
+      userId,
+      age,
+      weight,
+      height,
+      gender,
+      goal,
+      dietType,
+      activityLevel,
+    } = body;
 
-    if (!userId) {
+    // ตรวจสอบค่าที่จำเป็น
+    if (
+      !userId ||
+      age == null ||
+      weight == null ||
+      height == null ||
+      gender == null ||
+      goal == null ||
+      dietType == null ||
+      activityLevel == null
+    ) {
       return new Response(
-        JSON.stringify({ error: 'Missing required userId' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'Missing required fields' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
       );
     }
 
-    // ดึงข้อมูล User จาก Database
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    // ดึงข้อมูล User
+    const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
       return new Response(JSON.stringify({ error: 'User not found' }), {
@@ -27,45 +47,29 @@ export async function POST(req) {
       });
     }
 
-    // ตรวจสอบว่ามี HealthMetrics แล้วหรือยัง
-    const existingMetrics = await prisma.healthMetrics.findUnique({
-      where: { userId: user.id },
+    console.log('Input to Calculation:', {
+      weight,
+      height,
+      age,
+      gender,
+      activityLevel,
+      goal,
+      dietType,
     });
 
-    if (existingMetrics) {
-      return new Response(
-        JSON.stringify({ error: 'User already has health metrics' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // ตรวจสอบค่า gender และ goal ว่าถูกต้องหรือไม่
-    if (user.gender !== 1 && user.gender !== 0) {
-      return new Response(JSON.stringify({ error: 'gender must be 0 or 1' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (user.goal !== 1 && user.goal !== 0 && user.goal !== -1) {
-      return new Response(
-        JSON.stringify({ error: 'goal must be 1, 0, or -1' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // ใช้ข้อมูลจาก user มาใส่ Calculation
+    // เรียกใช้ Calculation
     const result = Calculation({
-      weight: user.weight,
-      height: user.height,
-      age: user.age,
-      gender: user.gender,
-      activityLevel: user.activityLevel,
-      goal: user.goal,
-      dietType: user.dietType,
+      weight,
+      height,
+      age,
+      gender,
+      activityLevel,
+      goal,
+      dietType,
     });
-
+    console.log('hellooooooo', result);
     if (!result) {
+      console.error('Calculation() returned null');
       return new Response(
         JSON.stringify({ error: 'Calculation function returned null' }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
@@ -75,6 +79,13 @@ export async function POST(req) {
     // บันทึกค่า Health Metrics
     const healthMetrics = await prisma.healthMetrics.create({
       data: {
+        weight,
+        height,
+        age,
+        gender,
+        activityLevel,
+        goal,
+        dietType,
         bmi: parseFloat(result.BMI),
         bmr: parseFloat(result.BMR),
         tdee: parseFloat(result.TDEE),
@@ -83,27 +94,28 @@ export async function POST(req) {
         leanMass: parseFloat(result.LeanMass),
         weeklySurplus: parseFloat(result.weeklySurplus),
         dailySurplus: parseFloat(result.dailySurplus),
-        userId: user.id,
+        protein: parseFloat(result.protein),
+        fat: parseFloat(result.fat),
+        carbs: parseFloat(result.carbs),
+        userId: userId,
       },
-    });
-
-    // บันทึก Macronutrients
-    const macronutrients = await prisma.macronutrients.create({
-      data: {
-        protein: parseFloat(result.macronutrients.protein),
-        fat: parseFloat(result.macronutrients.fat),
-        carbs: parseFloat(result.macronutrients.carbs),
-        healthMetricsId: healthMetrics.id, // Connect to healthMetrics
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
 
     return new Response(
       JSON.stringify({
         message: 'Calculation successful',
-        data: {
-          ...healthMetrics,
-          macronutrients,
-        },
+        data: healthMetrics,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );

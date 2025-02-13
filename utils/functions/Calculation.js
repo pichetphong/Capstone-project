@@ -43,7 +43,19 @@ export const Calculation = ({
     const FatMass = weight * (BodyFat / 100);
     const LeanMass = weight - FatMass;
 
-    const TDEE = BMR * activityLevel;
+    // const TDEE = BMR * activityLevel;
+    let TDEE;
+    if (activityLevel === 0) {
+      TDEE = BMR * 1.2;
+    } else if (activityLevel === 1) {
+      TDEE = BMR * 1.375;
+    } else if (activityLevel === 2) {
+      TDEE = BMR * 1.55;
+    } else if (activityLevel === 3) {
+      TDEE = BMR * 1.725;
+    } else {
+      TDEE = BMR * 1.9;
+    }
     const newTDEE = TDEE * 7;
 
     let weeklySurplus;
@@ -93,12 +105,9 @@ export const Calculation = ({
       LeanMass: LeanMass.toFixed(2),
       weeklySurplus: weeklySurplus.toFixed(2),
       dailySurplus: dailySurplus.toFixed(2),
-      // calorieSurplus: calorieSurplus.toFixed(2),
-      macronutrients: {
-        protein: protein.toFixed(2),
-        fat: fat.toFixed(2),
-        carbs: carbs.toFixed(2),
-      },
+      protein: protein.toFixed(2),
+      fat: fat.toFixed(2),
+      carbs: carbs.toFixed(2),
     };
   } catch (error) {
     console.error('Error inside Calculation():', error);

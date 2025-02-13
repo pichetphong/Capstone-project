@@ -7,12 +7,12 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    const { email, password } = body;
+    const { name, email, password } = body;
 
-    if (!email || !password) {
+    if (!name || !email || !password) {
       return new Response(
         JSON.stringify({
-          error: 'Missing required fields: email and password',
+          error: 'Missing required fields: name, email and password',
         }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
@@ -33,6 +33,7 @@ export async function POST(req) {
 
     const newUser = await prisma.user.create({
       data: {
+        name,
         email,
         password: hashedPassword,
       },
