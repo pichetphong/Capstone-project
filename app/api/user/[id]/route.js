@@ -33,18 +33,33 @@ export async function GET(req, context) {
   }
 }
 
-export async function PUT(req) {
+export async function PUT(req, context) {
   try {
+    const { id } = context.params;
     const body = await req.json();
+    const { name, email } = body;
 
-    const { id, name, email } = body;
+    // console.log('Updating user with ID:', id);
+
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'Missing user ID in URL' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Regular Expression สำหรับตรวจสอบรูปแบบของ Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!name || !email || !emailRegex.test(email)) {
+      return new Response(JSON.stringify({ error: 'Invalid name or email' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: {
-        name,
-        email,
-      },
+      data: { name, email },
     });
 
     return new Response(JSON.stringify(updatedUser), {
@@ -52,7 +67,15 @@ export async function PUT(req) {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.log('Error updating user:', error);
+    // P2025 คือ Error ที่ Prisma แจ้งว่าไม่มีข้อมูลให้ update/delete
+    if (error.code === 'P2025') {
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.error('Error updating user:', error);
     return new Response(JSON.stringify({ error: 'Failed to update user' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
