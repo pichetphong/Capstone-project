@@ -2,6 +2,33 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+export async function GET() {
+  try {
+    const ingredients = await prisma.ingredients.findMany();
+
+    if (ingredients.length === 0) {
+      console.log('⚠️ No ingredients found.');
+      return new Response(JSON.stringify({ message: 'No ingredients found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`Found ${ingredients.length} ingredients`);
+
+    return new Response(JSON.stringify(ingredients), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error fetching ingredients:', error);
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+
 export async function POST(req) {
   try {
     const body = await req.json();
