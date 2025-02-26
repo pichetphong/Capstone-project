@@ -17,23 +17,28 @@ export async function POST(req) {
   }
 
   const prompt = `
-  คุณเป็นเชฟที่เชี่ยวชาญด้านโภชนาการ ช่วยสร้างเมนูอาหาร 3 มื้อสำหรับ 1 วัน 
-  โดยให้แต่ละมื้อมีพลังงานและสารอาหารที่สมดุลกันตามเป้าหมายของวันนี้:
-  - พลังงานรวม: ${dailySurplus} kcal
-  - โปรตีน: ${protein}g
-  - ไขมัน: ${fat}g
-  - คาร์โบไฮเดรต: ${carbs}g
-
-  **วัตถุดิบที่สามารถใช้ได้:** 
+  You are a professional nutritionist chef. Please create a meal plan for 1 day with 3 meals, ensuring balanced energy and nutrients per meal.
+  
+  **Daily targets:**
+  - Total Calories: ${dailySurplus} kcal
+  - Protein: ${protein}g
+  - Fat: ${fat}g
+  - Carbohydrates: ${carbs}g
+  
+  **Available ingredients:**
   ${JSON.stringify(ingredients, null, 2)}
-
-  แต่ละมื้อต้องมีสารอาหารใกล้เคียงกัน
-  สามารถใช้วัตถุดิบในรายการข้างต้น และปรับปริมาณเพื่อให้ได้สารอาหารที่เหมาะสม
-  ให้รายละเอียดของแต่ละเมนูในรูปแบบ JSON โดยมีฟิลด์:
-    - \`meal\` (เช้า, กลางวัน, เย็น)
-    - \`menu_name\` (ชื่อเมนู)
-    - \`ingredients\` (รายการวัตถุดิบและปริมาณที่ใช้)
-    - \`cooking_method\` (วิธีทำ)
+  
+  Each meal should have similar nutrient distribution.  
+  You can adjust ingredient quantities to achieve the optimal nutrient balance.  
+  
+  Return the result in JSON format with the following fields:
+  - \`meal\` (Breakfast, Lunch, Dinner)
+  - \`menu_name\` (Meal name in **Thai language**)
+  - \`ingredients\` (List of ingredients and their amounts)
+  - \`cooking_method\` (Cooking instructions in **Thai language**)
+  - \`calories\` (Total calories per meal)
+  - \`protein\` (Total protein per meal in grams)
+  - \`fat\` (Total fat per meal in grams)
   `;
 
   try {
