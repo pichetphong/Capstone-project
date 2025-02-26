@@ -35,32 +35,44 @@ export async function GET(req, context) {
 
 export async function PUT(req, context) {
   try {
-    const { id } = context.params;
-    const body = await req.json();
-    const { name, email } = body;
-
-    // console.log('Updating user with ID:', id);
+    const { id } = await context.params;
 
     if (!id) {
-      return new Response(JSON.stringify({ error: 'Missing user ID in URL' }), {
+      return new Response(JSON.stringify({ error: 'Missing user ID' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // Regular Expression สำหรับตรวจสอบรูปแบบของ Email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!name || !email || !emailRegex.test(email)) {
-      return new Response(JSON.stringify({ error: 'Invalid name or email' }), {
-        status: 400,
+    const body = await req.json();
+    console.log('dada', body);
+    const { name, email } = body;
+    console.log('adad', name, email);
+
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+
+    console.log('@@@!@!@!@!@!', updateData);
+
+    // ✅ ตรวจสอบว่ามี user อยู่ก่อน
+    const existingUser = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!existingUser) {
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id },
-      data: { name, email },
+      where: { id: id },
+      data: updateData,
     });
+
+    console.log('updatedUser:', updatedUser);
 
     return new Response(JSON.stringify(updatedUser), {
       status: 200,
