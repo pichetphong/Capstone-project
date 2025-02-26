@@ -33,75 +33,52 @@ export async function GET(req, context) {
   }
 }
 
-// export async function PUT(req, context) {
-//   const { id } = await context.params;
-//   const body = await req.json();
+export async function PUT(req, context) {
+  try {
+    const { id } = context.params;
+    const body = await req.json();
+    const { name, email } = body;
 
-//   try {
-//     // -1 = lose weight, 0 = maintain weight, 1 = gain weight
-//     if (body.goal !== 1 && body.goal !== 0 && body.goal !== -1) {
-//       return new Response(JSON.stringify({ error: 'Invalid goal value' }), {
-//         status: 400,
-//         headers: { 'Content-Type': 'application/json' },
-//       });
-//     }
+    // console.log('Updating user with ID:', id);
 
-//     // low carb = -1, balanced = 0, high protein = 1
-//     if (body.dietType !== -1 && body.dietType !== 0 && body.dietType !== 1) {
-//       return new Response(JSON.stringify({ error: 'Invalid dietType value' }), {
-//         status: 400,
-//         headers: { 'Content-Type': 'application/json' },
-//       });
-//     }
+    if (!id) {
+      return new Response(JSON.stringify({ error: 'Missing user ID in URL' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
-//     // 0 = female, 1 = male
-//     if (body.gender !== 1 && body.gender !== 0) {
-//       return new Response(JSON.stringify({ error: 'Invalid gender value' }), {
-//         status: 400,
-//         headers: { 'Content-Type': 'application/json' },
-//       });
-//     }
+    // Regular Expression สำหรับตรวจสอบรูปแบบของ Email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!name || !email || !emailRegex.test(email)) {
+      return new Response(JSON.stringify({ error: 'Invalid name or email' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
-//     // 0 = sedentary, 1 = lightly active, 2 = moderately active, 3 = very active, 4 = super active
-//     if (
-//       body.activityLevel !== 0 &&
-//       body.activityLevel !== 1 &&
-//       body.activityLevel !== 2 &&
-//       body.activityLevel !== 3 &&
-//       body.activityLevel !== 4
-//     ) {
-//       return new Response(
-//         JSON.stringify({ error: 'Invalid activityLevel value' }),
-//         {
-//           status: 400,
-//           headers: { 'Content-Type': 'application/json' },
-//         }
-//       );
-//     }
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { name, email },
+    });
 
-//     const updatedUser = await prisma.user.update({
-//       where: { id },
-//       data: {
-//         name: body.name,
-//         age: body.age,
-//         weight: body.weight,
-//         height: body.height,
-//         gender: body.gender,
-//         goal: body.goal,
-//         dietType: body.dietType,
-//         activityLevel: body.activityLevel,
-//       },
-//     });
+    return new Response(JSON.stringify(updatedUser), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    // P2025 คือ Error ที่ Prisma แจ้งว่าไม่มีข้อมูลให้ update/delete
+    if (error.code === 'P2025') {
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
-//     return new Response(JSON.stringify(updatedUser), {
-//       status: 200,
-//       headers: { 'Content-Type': 'application/json' },
-//     });
-//   } catch (error) {
-//     console.log('Error updating user:', error);
-//     return new Response(JSON.stringify({ error: 'Failed to update user' }), {
-//       status: 500,
-//       headers: { 'Content-Type': 'application/json' },
-//     });
-//   }
-// }
+    console.error('Error updating user:', error);
+    return new Response(JSON.stringify({ error: 'Failed to update user' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}

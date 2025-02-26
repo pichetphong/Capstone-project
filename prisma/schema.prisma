@@ -51,3 +51,14 @@ model HealthMetrics {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model Ingredients {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  calories      Float
+  protein       Float
+  fat           Float
+  carbohydrates Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
