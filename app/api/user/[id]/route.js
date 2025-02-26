@@ -36,50 +36,40 @@ export async function GET(req, context) {
 export async function PUT(req, context) {
   try {
     const { id } = await context.params;
+    const body = await req.json();
+    const { name, email } = body;
+
+    // console.log('Updating user with ID:', id);
 
     if (!id) {
-      return new Response(JSON.stringify({ error: 'Missing user ID' }), {
+      return new Response(JSON.stringify({ error: 'Missing user ID in URL' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const body = await req.json();
-    console.log('dada', body);
-    const { name, email } = body;
-    console.log('adad', name, email);
-
-    const updateData = {};
-    if (name) updateData.name = name;
-    if (email) updateData.email = email;
-
-    console.log('@@@!@!@!@!@!', updateData);
-
-    // ✅ ตรวจสอบว่ามี user อยู่ก่อน
     const existingUser = await prisma.user.findUnique({
-      where: { id },
+      where: { email },
     });
 
-    if (!existingUser) {
-      return new Response(JSON.stringify({ error: 'User not found' }), {
-        status: 404,
+    if (existingUser) {
+      return new Response(JSON.stringify({ error: 'Email already in use' }), {
+        status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
+    // อัปเดตข้อมูล
     const updatedUser = await prisma.user.update({
-      where: { id: id },
-      data: updateData,
+      where: { id },
+      data: { name, email },
     });
-
-    console.log('updatedUser:', updatedUser);
 
     return new Response(JSON.stringify(updatedUser), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    // P2025 คือ Error ที่ Prisma แจ้งว่าไม่มีข้อมูลให้ update/delete
     if (error.code === 'P2025') {
       return new Response(JSON.stringify({ error: 'User not found' }), {
         status: 404,
