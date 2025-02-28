@@ -35,6 +35,8 @@ export async function POST(req) {
     const body = await req.json();
     const { userId, dailySurplus, protein, fat, carbs, ingredients } = body;
 
+    // VALIDATION
+
     if (
       !userId ||
       !dailySurplus ||
@@ -50,10 +52,7 @@ export async function POST(req) {
       );
     }
 
-    // VALIDATION
-
     const user = await prisma.user.findUnique({ where: { id: userId } });
-
     if (!user) {
       return new Response(JSON.stringify({ error: 'User not found' }), {
         status: 404,
@@ -62,23 +61,16 @@ export async function POST(req) {
     }
 
     const ingredientIds = ingredients.map((ing) => ing.id);
-
-    // ดึงวัตถุดิบที่มีอยู่ในฐานข้อมูล
     const existingIngredients = await prisma.ingredients.findMany({
       where: { id: { in: ingredientIds } },
     });
-
-    // แปลงข้อมูลที่ดึงมาให้เป็น Set เพื่อตรวจสอบง่ายขึ้น
     const existingIngredientIds = new Set(
       existingIngredients.map((ing) => ing.id)
     );
 
-    // ค้นหาวัตถุดิบที่ไม่มีอยู่ในฐานข้อมูล
     const missingIngredients = ingredients.filter(
       (ing) => !existingIngredientIds.has(ing.id)
     );
-
-    // ถ้ามีวัตถุดิบที่ไม่มีในฐานข้อมูล ให้ตอบกลับ error
     if (missingIngredients.length > 0) {
       return new Response(
         JSON.stringify({
@@ -139,20 +131,15 @@ The response must be in JSON format and contain:
       response_format: zodResponseFormat(MealPlanResponseSchema, 'mealPlan'), // Zod check response
     });
 
-    // const mealPlan = completion.choices[0].message.parsed;
     const mealPlan = completion.choices?.[0]?.message?.parsed;
-
-    console.log('mealPlan response:', JSON.stringify(mealPlan, null, 2));
-    console.log('---------------------------------');
-    const mealPlanData = mealPlan?.mealPlan || []; // ตรวจสอบว่าเป็น array หรือไม่
-    if (!Array.isArray(mealPlanData)) {
-      throw new Error('mealPlanData is not an array');
-    }
     if (!mealPlan || !Array.isArray(mealPlan.mealPlan)) {
       throw new Error('Invalid mealPlan data');
     }
 
-    const createdMeals = await prisma.meals.createMany({
+    const mealPlanData = mealPlan.mealPlan;
+    console.log('mealPlan response:', JSON.stringify(mealPlanData, null, 2));
+
+    await prisma.meals.createMany({
       data: mealPlanData.map((meal) => ({
         UserId: userId,
         name: meal.menu_name,
@@ -165,9 +152,44 @@ The response must be in JSON format and contain:
       })),
     });
 
-    return new Response(JSON.stringify({ mealPlan, createdMeals }), {
-      status: 200,
+    const createdMealsList = await prisma.meals.findMany({
+      where: {
+        UserId: userId,
+        name: { in: mealPlanData.map((meal) => meal.menu_name) },
+      },
     });
+
+    const mealIdMap = new Map(
+      createdMealsList.map((meal) => [meal.name, meal.id])
+    );
+    const ingredientMap = new Map(ingredients.map((ing) => [ing.name, ing.id]));
+
+    const mealIngredientsData = mealPlanData.flatMap((meal) =>
+      meal.ingredients.map((ing) => {
+        const ingredientId = ingredientMap.get(ing.name);
+        if (!ingredientId) {
+          throw new Error(`Ingredient ID not found for: ${ing.name}`);
+        }
+        return {
+          mealId: mealIdMap.get(meal.menu_name),
+          ingredientId: ingredientId,
+          quantity: parseFloat(ing.amount) || 0,
+        };
+      })
+    );
+
+    const createdMealIngredients = await prisma.meal_Ingredients.createMany({
+      data: mealIngredientsData,
+    });
+
+    return new Response(
+      JSON.stringify({
+        mealPlan: mealPlanData,
+        createdMeals: { count: createdMealsList.length },
+        createdMealIngredients: { count: createdMealIngredients.count },
+      }),
+      { status: 200 }
+    );
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
