@@ -8,7 +8,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// สร้าง Zod schema สำหรับ Meal Plan ที่เราคาดหวัง
+// Zod schema
 const MealPlanResponseSchema = z.object({
   mealPlan: z.array(
     z.object({
@@ -88,92 +88,6 @@ export async function POST(req) {
     });
 
     const mealPlan = completion.choices[0].message.parsed;
-
-    // const response = await openai.chat.completions.create({
-    //   model: 'gpt-4o-2024-08-06',
-    //   messages: [
-    //     {
-    //       role: 'system',
-    //       content:
-    //         'You are an expert Thai chef specializing in balanced meal planning.',
-    //     },
-    //     { role: 'user', content: prompt },
-    //   ],
-    //   response_format: {
-    //     name: 'meal_plan',
-    //     schema: {
-    //       type: 'object',
-    //       properties: {
-    //         mealPlan: {
-    //           type: 'array',
-    //           description: 'List of meals in the meal plan.',
-    //           items: {
-    //             type: 'object',
-    //             properties: {
-    //               meal: {
-    //                 type: 'string',
-    //                 description: 'Type of the meal (Breakfast, Lunch, Dinner).',
-    //               },
-    //               menu_name: {
-    //                 type: 'string',
-    //                 description: 'Name of the menu.',
-    //               },
-    //               ingredients: {
-    //                 type: 'array',
-    //                 description: 'List of ingredients used in the meal.',
-    //                 items: {
-    //                   type: 'object',
-    //                   properties: {
-    //                     name: {
-    //                       type: 'string',
-    //                       description: 'Name of the ingredient.',
-    //                     },
-    //                     amount: {
-    //                       type: 'string',
-    //                       description: 'Amount of the ingredient.',
-    //                     },
-    //                   },
-    //                   required: ['name', 'amount'],
-    //                   additionalProperties: false,
-    //                 },
-    //               },
-    //               cooking_method: {
-    //                 type: 'string',
-    //                 description: 'Instructions on how to cook the meal.',
-    //               },
-    //               calories: {
-    //                 type: 'number',
-    //                 description: 'Total calories in the meal.',
-    //               },
-    //               protein: {
-    //                 type: 'number',
-    //                 description: 'Total protein content in grams.',
-    //               },
-    //               fat: {
-    //                 type: 'number',
-    //                 description: 'Total fat content in grams.',
-    //               },
-    //             },
-    //             required: [
-    //               'meal',
-    //               'menu_name',
-    //               'ingredients',
-    //               'cooking_method',
-    //               'calories',
-    //               'protein',
-    //               'fat',
-    //             ],
-    //             additionalProperties: false,
-    //           },
-    //         },
-    //       },
-    //       required: ['mealPlan'],
-    //       additionalProperties: false,
-    //     },
-    //     strict: true,
-    //   },
-    //   temperature: 0.7,
-    // });
 
     console.log('mealPlan for 1 day 3 meals', mealPlan);
 
