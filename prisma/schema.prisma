@@ -80,6 +80,9 @@ model Meal_Ingredients {
 
 model Meals {
   id             String   @id @default(uuid())
+  week           Int
+  day            String // Monday, Tuesday, ...
+  meal           String // Breakfast, Lunch, Dinner
   name           String
   cooking_method String
   calories       Float
