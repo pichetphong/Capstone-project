@@ -50,6 +50,8 @@ export async function POST(req) {
       );
     }
 
+    // VALIDATION
+
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
@@ -57,6 +59,35 @@ export async function POST(req) {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
+    }
+
+    const ingredientIds = ingredients.map((ing) => ing.id);
+
+    // ดึงวัตถุดิบที่มีอยู่ในฐานข้อมูล
+    const existingIngredients = await prisma.ingredients.findMany({
+      where: { id: { in: ingredientIds } },
+    });
+
+    // แปลงข้อมูลที่ดึงมาให้เป็น Set เพื่อตรวจสอบง่ายขึ้น
+    const existingIngredientIds = new Set(
+      existingIngredients.map((ing) => ing.id)
+    );
+
+    // ค้นหาวัตถุดิบที่ไม่มีอยู่ในฐานข้อมูล
+    const missingIngredients = ingredients.filter(
+      (ing) => !existingIngredientIds.has(ing.id)
+    );
+
+    // ถ้ามีวัตถุดิบที่ไม่มีในฐานข้อมูล ให้ตอบกลับ error
+    if (missingIngredients.length > 0) {
+      return new Response(
+        JSON.stringify({
+          error: `Invalid ingredients: ${missingIngredients
+            .map((ing) => ing.name)
+            .join(', ')}`,
+        }),
+        { status: 400 }
+      );
     }
 
     // ```${}```
