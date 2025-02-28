@@ -47,15 +47,15 @@ export async function POST(req) {
       });
     }
 
-    console.log('Input to Calculation:', {
-      weight,
-      height,
-      age,
-      gender,
-      activityLevel,
-      goal,
-      dietType,
-    });
+    // console.log('Input to Calculation:', {
+    //   weight,
+    //   height,
+    //   age,
+    //   gender,
+    //   activityLevel,
+    //   goal,
+    //   dietType,
+    // });
 
     // เรียกใช้ Calculation
     const result = Calculation({

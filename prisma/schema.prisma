@@ -86,6 +86,7 @@ model Meals {
   protein        Float
   fat            Float
   carbohydrates  Float
+  reason         String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
