@@ -212,7 +212,7 @@ export async function POST(req) {
 
     if (expectedDays.some((day) => !daysSet.has(day))) {
       console.error('❌ AI did not return all 7 days!');
-      throw new Error('❌ AI response is incomplete. Please try again.');
+      throw new Error('AI response is incomplete. Please try again.');
     }
 
     await prisma.meal_Ingredients.createMany({ data: mealIngredientsData });
