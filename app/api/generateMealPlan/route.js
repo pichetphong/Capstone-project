@@ -37,15 +37,7 @@ export async function POST(req) {
     const body = await req.json();
     const { userId, dailySurplus, protein, fat, carbs, days } = body;
 
-    if (
-      !userId ||
-      !dailySurplus ||
-      !protein ||
-      !fat ||
-      !carbs ||
-      !days ||
-      Object.keys(days).length === 0
-    ) {
+    if (!userId || !dailySurplus || !protein || !fat || !carbs || !days) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameters' }),
         { status: 400 }
@@ -59,44 +51,51 @@ export async function POST(req) {
       });
     }
 
-    // ✅ แก้ไข UserId -> userId เพื่อให้ตรงกับ Schema
     const latestWeek = await prisma.meals.findFirst({
-      where: { UserId: userId }, // แก้ไขจาก userId -> UserId
+      where: { UserId: userId },
       orderBy: { week: 'desc' },
       select: { week: true },
     });
 
     const currentWeek = latestWeek?.week ? latestWeek.week + 1 : 1;
 
-    const allIngredients = Object.values(days).flatMap(
-      (day) => day.ingredients
-    );
-    const ingredientIds = allIngredients.map((ing) => ing.id);
+    const ingredientIds = Object.values(days).flatMap((day) => day.ingredients);
 
     const existingIngredients = await prisma.ingredients.findMany({
       where: { id: { in: ingredientIds } },
+      select: {
+        id: true,
+        name: true,
+        calories: true,
+        protein: true,
+        fat: true,
+        carbohydrates: true,
+      },
     });
 
-    const existingIngredientIds = new Set(
-      existingIngredients.map((ing) => ing.id)
+    console.log('✅ Ingredients Retrieved from Database:', existingIngredients);
+
+    const ingredientMap = new Map(
+      existingIngredients.map((ing) => [ing.name, ing])
     );
 
-    const missingIngredients = allIngredients.filter(
-      (ing) => !existingIngredientIds.has(ing.id)
+    const updatedDays = Object.entries(days).reduce((acc, [day, data]) => {
+      acc[day] = {
+        ...data,
+        ingredients: data.ingredients
+          .map((id) => existingIngredients.find((ing) => ing.id === id) || null)
+          .filter(Boolean),
+      };
+      return acc;
+    }, {});
+
+    console.log(
+      '📌 Updated Ingredients for OpenAI Prompt:',
+      JSON.stringify(updatedDays, null, 2)
     );
-    if (missingIngredients.length > 0) {
-      return new Response(
-        JSON.stringify({
-          error: `Invalid ingredients: ${missingIngredients
-            .map((ing) => ing.name)
-            .join(', ')}`,
-        }),
-        { status: 400 }
-      );
-    }
 
     const prompt = `
-    You are a professional nutritionist chef. Please create a meal plan for **Week ${currentWeek}**, covering 7 days (Monday to Sunday).
+You are a professional nutritionist chef. Please create a meal plan for **Week ${currentWeek}**, covering 7 days (Monday to Sunday).
 Each day must have **Breakfast, Lunch, and Dinner**.
 
 ### **Daily Nutrition Targets**
@@ -106,39 +105,44 @@ Each day must have **Breakfast, Lunch, and Dinner**.
 - **Carbohydrates**: ${carbs}g
 
 ### **Allowed Ingredients for Each Day**
-Below is a list of approved ingredients for each day.  
-You MUST use ONLY these ingredients when creating the meal plan.  
-DO NOT add any additional ingredients that are not listed below.  
-Meals that contain unapproved ingredients will be rejected.  
-
-${JSON.stringify(days, null, 2)}
+Each day has a specific set of allowed ingredients.  
+DO NOT use any ingredient that is not listed here:
+\`\`\`json
+${JSON.stringify(updatedDays, null, 2)}
+\`\`\`
 
 ### **Meal Planning Rules**
-- Each meal must be unique for each day (No duplicated meals across different days).
-- Strictly use only the provided ingredients.  
-- Do not add new ingredients that are not explicitly listed.  
+- Each day must have exactly **3 meals**: **Breakfast, Lunch, and Dinner**.
+- Strictly use only the provided ingredients for that specific day.
 - Specify the exact amount of each ingredient used in grams (g).
-- Provide a detailed cooking method in Thai language.
-- Include a reason for each meal selection in Thai language.
-- Include Week (${currentWeek}) and Day for each meal.
+- Provide a detailed **cooking method in Thai language**.
+- Include a **reason for each meal selection in Thai language**.
 
 ### **Response Format**
-The response must be in JSON format and contain:
-- **week** (Week number)
-- **day** (Day name)
-- **meal** (Breakfast, Lunch, Dinner)
-- **menu_name** (Meal name in Thai language)
-- **ingredients** (List of ingredients used with their amounts)
-- **cooking_method** (Instructions in Thai)
-- **calories** (Total calories per meal)
-- **protein** (Protein in grams)
-- **fat** (Fat in grams)
-- **carbohydrates** (Carbohydrates in grams)
-- **reason** (Explanation in Thai)
+The response must be in JSON format:
+\`\`\`json
+{
+  "mealPlan": [
+    {
+      "week": <number>,
+      "day": "<Day Name>",
+      "meal": "<Breakfast/Lunch/Dinner>",
+      "menu_name": "<Meal Name in Thai>",
+      "ingredients": [
+        { "name": "<Ingredient Name>", "amount": "<Amount in grams>" }
+      ],
+      "cooking_method": "<Cooking instructions in Thai>",
+      "calories": <number>,
+      "protein": <number>,
+      "fat": <number>,
+      "carbohydrates": <number>,
+      "reason": "<Reason for choosing this meal in Thai>"
+    }
+  ]
+}
+\`\`\`
+`;
 
-    `;
-
-    // OpenAi API call
     const completion = await openai.beta.chat.completions.parse({
       model: 'gpt-4o-mini',
       messages: [
@@ -153,74 +157,87 @@ The response must be in JSON format and contain:
     });
 
     const mealPlan = completion.choices?.[0]?.message?.parsed;
+
+    console.log(
+      '🍽️ Generated Meal Plan from OpenAI:',
+      JSON.stringify(mealPlan, null, 2)
+    );
+
     if (!mealPlan || !Array.isArray(mealPlan.mealPlan)) {
       throw new Error('Invalid mealPlan data');
     }
 
-    const mealPlanData = mealPlan.mealPlan;
-
-    await prisma.$transaction(async (prisma) => {
-      await prisma.meals.createMany({
-        data: mealPlanData.map((meal) => ({
-          UserId: userId,
-          week: meal.week,
-          day: meal.day,
-          meal: meal.meal,
-          name: meal.menu_name,
-          cooking_method: meal.cooking_method,
-          calories: meal.calories,
-          protein: meal.protein,
-          fat: meal.fat,
-          carbohydrates: meal.carbohydrates,
-          reason: meal.reason,
-        })),
-      });
-
-      // ✅ แก้ไขการดึง mealId เพื่อให้ไม่มี undefined
-      const createdMealsList = await prisma.meals.findMany({
-        where: { UserId: userId, week: currentWeek },
-        select: { id: true, day: true, meal: true },
-      });
-
-      // ✅ ใช้ Map เพื่อจับคู่ day-meal กับ mealId
-      const mealIdMap = new Map(
-        createdMealsList.map((meal) => [`${meal.day}-${meal.meal}`, meal.id])
-      );
-
-      // ✅ แก้ไขการดึง ingredientId ให้ไม่มี undefined
-      const ingredientMap = new Map(
-        allIngredients.map((ing) => [ing.name, ing.id])
-      );
-
-      const mealIngredientsData = mealPlanData.flatMap((meal) =>
-        meal.ingredients.map((ing) => {
-          const mealId = mealIdMap.get(`${meal.day}-${meal.meal}`);
-          const ingredientId = ingredientMap.get(ing.name);
-
-          if (!mealId)
-            throw new Error(`Meal ID not found for ${meal.day} - ${meal.meal}`);
-          if (!ingredientId)
-            throw new Error(`Ingredient ID not found for ${ing.name}`);
-
-          return {
-            mealId: mealId,
-            ingredientId: ingredientId,
-            quantity: parseFloat(ing.amount) || 0,
-          };
-        })
-      );
-
-      // ✅ บันทึก Meal_Ingredients อย่างถูกต้อง
-      await prisma.meal_Ingredients.createMany({ data: mealIngredientsData });
+    await prisma.meals.createMany({
+      data: mealPlan.mealPlan.map((meal) => ({
+        UserId: userId,
+        week: meal.week,
+        day: meal.day,
+        meal: meal.meal,
+        name: meal.menu_name,
+        cooking_method: meal.cooking_method,
+        calories: meal.calories,
+        protein: meal.protein,
+        fat: meal.fat,
+        carbohydrates: meal.carbohydrates,
+        reason: meal.reason,
+      })),
     });
 
+    // 🔥 ดึงข้อมูล Meal ที่เพิ่งสร้างจาก Database
+    const createdMealsList = await prisma.meals.findMany({
+      where: { UserId: userId, week: currentWeek },
+      select: { id: true, day: true, meal: true },
+    });
+
+    // ✅ Map `day-meal` -> `id`
+    const mealIdMap = new Map(
+      createdMealsList.map((meal) => [`${meal.day}-${meal.meal}`, meal.id])
+    );
+
+    console.log('✅ Created Meals Map:', [...mealIdMap.entries()]);
+
+    const mealIngredientsData = mealPlan.mealPlan.flatMap((meal) =>
+      meal.ingredients.map((ing) => {
+        const mealId = mealIdMap.get(`${meal.day}-${meal.meal}`);
+        const ingredient = ingredientMap.get(ing.name);
+        const ingredientId = ingredient?.id;
+
+        console.log(
+          `🔍 Meal: ${meal.day} - ${meal.meal} | Meal ID: ${
+            mealId || '❌ NOT FOUND'
+          }`
+        );
+        console.log(
+          `🔍 Checking Ingredient: ${ing.name} | Found ID: ${
+            ingredientId || '❌ NOT FOUND'
+          }`
+        );
+
+        if (!mealId)
+          throw new Error(`Meal ID not found for ${meal.day} - ${meal.meal}`);
+        if (!ingredientId)
+          throw new Error(`Ingredient ID not found for ${ing.name}`);
+
+        return {
+          mealId: mealId,
+          ingredientId: ingredientId,
+          quantity: parseFloat(ing.amount) || 0,
+        };
+      })
+    );
+
+    await prisma.meal_Ingredients.createMany({ data: mealIngredientsData });
+
     return new Response(
-      JSON.stringify({ success: true, week: currentWeek, data: mealPlanData }),
-      {
-        status: 200,
-      }
+      JSON.stringify({
+        success: true,
+        week: currentWeek,
+        data: mealPlan.mealPlan,
+      }),
+      { status: 200 }
     );
   } catch (error) {
+    console.error('❌ Error:', error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
     });
