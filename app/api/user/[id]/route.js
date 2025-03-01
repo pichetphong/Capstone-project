@@ -8,7 +8,7 @@ export async function GET(req, context) {
   try {
     const user = await prisma.user.findUnique({
       where: { id },
-      include: { healthMetrics: true },
+      include: { healthMetrics: true, Meals: true },
     });
 
     if (!user) {

@@ -8,7 +8,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Zod schema
 const MealPlanResponseSchema = z.object({
   mealPlan: z.array(
     z.object({
@@ -18,6 +17,7 @@ const MealPlanResponseSchema = z.object({
       menu_name: z.string(),
       ingredients: z.array(
         z.object({
+          id: z.string(),
           name: z.string(),
           amount: z.string(),
         })
@@ -59,10 +59,12 @@ export async function POST(req) {
 
     const currentWeek = latestWeek?.week ? latestWeek.week + 1 : 1;
 
-    const ingredientIds = Object.values(days).flatMap((day) => day.ingredients);
+    const ingredientIds = new Set(
+      Object.values(days).flatMap((day) => day.ingredients)
+    );
 
     const existingIngredients = await prisma.ingredients.findMany({
-      where: { id: { in: ingredientIds } },
+      where: { id: { in: [...ingredientIds] } },
       select: {
         id: true,
         name: true,
@@ -76,72 +78,74 @@ export async function POST(req) {
     console.log('✅ Ingredients Retrieved from Database:', existingIngredients);
 
     const ingredientMap = new Map(
-      existingIngredients.map((ing) => [ing.name, ing])
+      existingIngredients.map((ing) => [ing.id, ing])
     );
 
-    const updatedDays = Object.entries(days).reduce((acc, [day, data]) => {
-      acc[day] = {
-        ...data,
-        ingredients: data.ingredients
-          .map((id) => existingIngredients.find((ing) => ing.id === id) || null)
-          .filter(Boolean),
-      };
-      return acc;
-    }, {});
+    const updatedDays = Object.fromEntries(
+      Object.entries(days).map(([day, data]) => [
+        day,
+        {
+          ...data,
+          ingredients: data.ingredients
+            .map((id) => ingredientMap.get(id) || null)
+            .filter(Boolean),
+        },
+      ])
+    );
 
     console.log(
       '📌 Updated Ingredients for OpenAI Prompt:',
       JSON.stringify(updatedDays, null, 2)
     );
 
+    // แก้ไข Prompt ให้ OpenAI ส่ง `id` กลับมา
     const prompt = `
-You are a professional nutritionist chef. Please create a meal plan for **Week ${currentWeek}**, covering 7 days (Monday to Sunday).
-Each day must have **Breakfast, Lunch, and Dinner**.
-
-### **Daily Nutrition Targets**
-- **Total Calories**: ${dailySurplus} kcal
-- **Protein**: ${protein}g
-- **Fat**: ${fat}g
-- **Carbohydrates**: ${carbs}g
-
-### **Allowed Ingredients for Each Day**
-Each day has a specific set of allowed ingredients.  
-DO NOT use any ingredient that is not listed here:
-\`\`\`json
-${JSON.stringify(updatedDays, null, 2)}
-\`\`\`
-
-### **Meal Planning Rules**
-- Each day must have exactly **3 meals**: **Breakfast, Lunch, and Dinner**.
-- Strictly use only the provided ingredients for that specific day.
-- Specify the exact amount of each ingredient used in grams (g).
-- Provide a detailed **cooking method in Thai language**.
-- Include a **reason for each meal selection in Thai language**.
-
-### **Response Format**
-The response must be in JSON format:
-\`\`\`json
-{
-  "mealPlan": [
+    You are a professional nutritionist chef. Please create a meal plan for **Week ${currentWeek}**, covering **7 days (Monday to Sunday)**.
+    Each day must have **Breakfast, Lunch, and Dinner**.
+    
+    ### **Rules (VERY IMPORTANT)**
+    **You MUST generate meal plans for ALL 7 DAYS (Monday to Sunday).**  
+    Each day **MUST** have **exactly 3 meals**: Breakfast, Lunch, and Dinner.  
+    **If any day is missing, your response will be REJECTED.**  
+    **If you fail to provide 7 full days, regenerate the entire response.**  
+    **STRICTLY use only the provided ingredients for each specific day.**
+    
+    ### **Allowed Ingredients**
+    Here is the list of **allowed ingredients for each day**.  
+    **DO NOT use ingredients that are not listed here.**  
+    **Using an unapproved ingredient will result in meal rejection.**
+    
+    \`\`\`json
+    ${JSON.stringify(updatedDays, null, 2)}
+    \`\`\`
+    
+    ### **Response Format**
+    The response **MUST** be in valid JSON and contain **exactly 7 days**:  
+    \`\`\`json
     {
-      "week": <number>,
-      "day": "<Day Name>",
-      "meal": "<Breakfast/Lunch/Dinner>",
-      "menu_name": "<Meal Name in Thai>",
-      "ingredients": [
-        { "name": "<Ingredient Name>", "amount": "<Amount in grams>" }
-      ],
-      "cooking_method": "<Cooking instructions in Thai>",
-      "calories": <number>,
-      "protein": <number>,
-      "fat": <number>,
-      "carbohydrates": <number>,
-      "reason": "<Reason for choosing this meal in Thai>"
+      "mealPlan": [
+        {
+          "week": <number>,
+          "day": "<Day Name>",
+          "meal": "<Breakfast/Lunch/Dinner>",
+          "menu_name": "<Meal Name in Thai>",
+          "ingredients": [
+            { "id": "<Ingredient ID>", "name": "<Ingredient Name>", "amount": "<Amount in grams>" }
+          ],
+          "cooking_method": "<Cooking instructions in Thai>",
+          "calories": <number>,
+          "protein": <number>,
+          "fat": <number>,
+          "carbohydrates": <number>,
+          "reason": "<Reason for choosing this meal in Thai>"
+        }
+      ]
     }
-  ]
-}
-\`\`\`
-`;
+    \`\`\`
+    
+    ---
+    **If your response does NOT include 7 full days, REGENERATE the entire response and make sure it includes every single day.**
+    `;
 
     const completion = await openai.beta.chat.completions.parse({
       model: 'gpt-4o-mini',
@@ -158,16 +162,11 @@ The response must be in JSON format:
 
     const mealPlan = completion.choices?.[0]?.message?.parsed;
 
-    console.log(
-      '🍽️ Generated Meal Plan from OpenAI:',
-      JSON.stringify(mealPlan, null, 2)
-    );
-
     if (!mealPlan || !Array.isArray(mealPlan.mealPlan)) {
       throw new Error('Invalid mealPlan data');
     }
 
-    await prisma.meals.createMany({
+    const createdMeals = await prisma.meals.createMany({
       data: mealPlan.mealPlan.map((meal) => ({
         UserId: userId,
         week: meal.week,
@@ -183,48 +182,38 @@ The response must be in JSON format:
       })),
     });
 
-    // 🔥 ดึงข้อมูล Meal ที่เพิ่งสร้างจาก Database
     const createdMealsList = await prisma.meals.findMany({
       where: { UserId: userId, week: currentWeek },
       select: { id: true, day: true, meal: true },
     });
 
-    // ✅ Map `day-meal` -> `id`
     const mealIdMap = new Map(
       createdMealsList.map((meal) => [`${meal.day}-${meal.meal}`, meal.id])
     );
 
-    console.log('✅ Created Meals Map:', [...mealIdMap.entries()]);
-
     const mealIngredientsData = mealPlan.mealPlan.flatMap((meal) =>
-      meal.ingredients.map((ing) => {
-        const mealId = mealIdMap.get(`${meal.day}-${meal.meal}`);
-        const ingredient = ingredientMap.get(ing.name);
-        const ingredientId = ingredient?.id;
-
-        console.log(
-          `🔍 Meal: ${meal.day} - ${meal.meal} | Meal ID: ${
-            mealId || '❌ NOT FOUND'
-          }`
-        );
-        console.log(
-          `🔍 Checking Ingredient: ${ing.name} | Found ID: ${
-            ingredientId || '❌ NOT FOUND'
-          }`
-        );
-
-        if (!mealId)
-          throw new Error(`Meal ID not found for ${meal.day} - ${meal.meal}`);
-        if (!ingredientId)
-          throw new Error(`Ingredient ID not found for ${ing.name}`);
-
-        return {
-          mealId: mealId,
-          ingredientId: ingredientId,
-          quantity: parseFloat(ing.amount) || 0,
-        };
-      })
+      meal.ingredients.map((ing) => ({
+        mealId: mealIdMap.get(`${meal.day}-${meal.meal}`),
+        ingredientId: ing.id,
+        quantity: parseFloat(ing.amount) || 0,
+      }))
     );
+
+    const daysSet = new Set(mealPlan.mealPlan.map((meal) => meal.day));
+    const expectedDays = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+
+    if (expectedDays.some((day) => !daysSet.has(day))) {
+      console.error('❌ AI did not return all 7 days!');
+      throw new Error('❌ AI response is incomplete. Please try again.');
+    }
 
     await prisma.meal_Ingredients.createMany({ data: mealIngredientsData });
 
