@@ -35,14 +35,36 @@ const MealPlanResponseSchema = z.object({
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { userId, dailySurplus, protein, fat, carbs, days } = body;
+    const { userId, days } = body;
 
-    if (!userId || !dailySurplus || !protein || !fat || !carbs || !days) {
+    if (!userId || !days) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameters' }),
         { status: 400 }
       );
     }
+
+    const healthMetrics = await prisma.healthMetrics.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        dailySurplus: true,
+        protein: true,
+        fat: true,
+        carbs: true,
+      },
+    });
+
+    if (!healthMetrics) {
+      return new Response(
+        JSON.stringify({ error: 'Health metrics not found' }),
+        { status: 404 }
+      );
+    }
+
+    const { dailySurplus, protein, fat, carbs } = healthMetrics;
+
+    console.log('healthMetrics:', healthMetrics);
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
@@ -98,7 +120,6 @@ export async function POST(req) {
       JSON.stringify(updatedDays, null, 2)
     );
 
-    // แก้ไข Prompt ให้ OpenAI ส่ง `id` กลับมา
     const prompt = `
     You are a professional nutritionist chef. Please create a meal plan for **Week ${currentWeek}**, covering **7 days (Monday to Sunday)**.
     Each day must have **Breakfast, Lunch, and Dinner**.
@@ -107,7 +128,6 @@ export async function POST(req) {
     **You MUST generate meal plans for ALL 7 DAYS (Monday to Sunday).**  
     Each day **MUST** have **exactly 3 meals**: Breakfast, Lunch, and Dinner.  
     **If any day is missing, your response will be REJECTED.**  
-    **If you fail to provide 7 full days, regenerate the entire response.**  
     **STRICTLY use only the provided ingredients for each specific day.**
     
     ### **Allowed Ingredients**
@@ -118,6 +138,12 @@ export async function POST(req) {
     \`\`\`json
     ${JSON.stringify(updatedDays, null, 2)}
     \`\`\`
+    
+    ### **Nutrition Goals**
+    - **Daily Surplus Calories**: ${dailySurplus}
+    - **Daily Protein**: ${protein}g
+    - **Daily Fat**: ${fat}g
+    - **Daily Carbohydrates**: ${carbs}g
     
     ### **Response Format**
     The response **MUST** be in valid JSON and contain **exactly 7 days**:  
@@ -142,9 +168,6 @@ export async function POST(req) {
       ]
     }
     \`\`\`
-    
-    ---
-    **If your response does NOT include 7 full days, REGENERATE the entire response and make sure it includes every single day.**
     `;
 
     const completion = await openai.beta.chat.completions.parse({
@@ -182,41 +205,6 @@ export async function POST(req) {
       })),
     });
 
-    const createdMealsList = await prisma.meals.findMany({
-      where: { UserId: userId, week: currentWeek },
-      select: { id: true, day: true, meal: true },
-    });
-
-    const mealIdMap = new Map(
-      createdMealsList.map((meal) => [`${meal.day}-${meal.meal}`, meal.id])
-    );
-
-    const mealIngredientsData = mealPlan.mealPlan.flatMap((meal) =>
-      meal.ingredients.map((ing) => ({
-        mealId: mealIdMap.get(`${meal.day}-${meal.meal}`),
-        ingredientId: ing.id,
-        quantity: parseFloat(ing.amount) || 0,
-      }))
-    );
-
-    const daysSet = new Set(mealPlan.mealPlan.map((meal) => meal.day));
-    const expectedDays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-
-    if (expectedDays.some((day) => !daysSet.has(day))) {
-      console.error('❌ AI did not return all 7 days!');
-      throw new Error('AI response is incomplete. Please try again.');
-    }
-
-    await prisma.meal_Ingredients.createMany({ data: mealIngredientsData });
-
     return new Response(
       JSON.stringify({
         success: true,
@@ -227,7 +215,7 @@ export async function POST(req) {
     );
   } catch (error) {
     console.error('❌ Error:', error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ message: 'Internal server error' }), {
       status: 500,
     });
   }
