@@ -1,4 +1,5 @@
 import { Calculation } from '../../../utils/functions/Calculation';
+import { validateInput } from '../../../utils/functions/validateInput';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -6,6 +7,15 @@ const prisma = new PrismaClient();
 export async function POST(req) {
   try {
     const body = await req.json();
+
+    const validation = validateInput(body);
+    if (!validation.isValid) {
+      return new Response(JSON.stringify({ error: validation.error }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const {
       userId,
       age,
@@ -17,27 +27,7 @@ export async function POST(req) {
       activityLevel,
     } = body;
 
-    // ตรวจสอบค่าที่จำเป็น
-    if (
-      !userId ||
-      age == null ||
-      weight == null ||
-      height == null ||
-      gender == null ||
-      goal == null ||
-      dietType == null ||
-      activityLevel == null
-    ) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    // ดึงข้อมูล User
+    // ✅ ดึงข้อมูล User
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
@@ -57,7 +47,7 @@ export async function POST(req) {
       dietType,
     });
 
-    // เรียกใช้ Calculation
+    // ✅ เรียกใช้ Calculation
     const result = Calculation({
       weight,
       height,
@@ -67,7 +57,7 @@ export async function POST(req) {
       goal,
       dietType,
     });
-    console.log('hellooooooo', result);
+
     if (!result) {
       console.error('Calculation() returned null');
       return new Response(
@@ -76,7 +66,7 @@ export async function POST(req) {
       );
     }
 
-    // บันทึกค่า Health Metrics
+    // ✅ บันทึกค่า Health Metrics
     const healthMetrics = await prisma.healthMetrics.create({
       data: {
         weight,
@@ -97,7 +87,7 @@ export async function POST(req) {
         protein: parseFloat(result.protein),
         fat: parseFloat(result.fat),
         carbs: parseFloat(result.carbs),
-        userId: userId,
+        userId,
       },
       include: {
         user: {
