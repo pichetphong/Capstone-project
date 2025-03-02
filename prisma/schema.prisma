@@ -26,14 +26,14 @@ model User {
 }
 
 model HealthMetrics {
-  id            String   @id @default(uuid())
+  id            String         @id @default(uuid())
   age           Int?
   weight        Float?
   height        Float?
-  gender        Int? // 0 = female, 1 = male
-  goal          Int? // -1 = lose weight, 0 = maintain weight, 1 = gain weight
-  dietType      Int? // low carb = -1, balanced = 0, high protein = 1
-  activityLevel Int? // 0 = sedentary / 1.2, 1 = lightly active / 1.375, 2 = moderately active / 1.55, 3 = very active / 1.725, 4 = super active / 1.9
+  gender        Gender?
+  goal          Goal?
+  dietType      DietType?
+  activityLevel ActivityLevel?
   bmi           Float
   bmr           Float
   tdee          Float
@@ -45,11 +45,36 @@ model HealthMetrics {
   protein       Float
   fat           Float
   carbs         Float
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Gender {
+  FEMALE // 0
+  MALE // 1
+}
+
+enum Goal {
+  LOSE_WEIGHT // -1
+  MAINTAIN // 0
+  GAIN_WEIGHT // 1
+}
+
+enum DietType {
+  LOW_CARB // -1
+  BALANCED // 0
+  HIGH_PROTEIN // 1
+}
+
+enum ActivityLevel {
+  SEDENTARY // 0 (1.2)
+  LIGHTLY_ACTIVE // 1 (1.375)
+  MODERATELY_ACTIVE // 2 (1.55)
+  VERY_ACTIVE // 3 (1.725)
+  SUPER_ACTIVE // 4 (1.9)
 }
 
 model Ingredients {
