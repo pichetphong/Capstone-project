@@ -33,14 +33,12 @@ const MealPlanResponseSchema = z.object({
 export async function generateMealPlan(userId, days) {
   console.log(`🚀 Generating meal plan for userId: ${userId}`);
 
-  // ✅ ดึงข้อมูลผู้ใช้
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
     console.error(`❌ User not found: ${userId}`);
     throw new Error('User not found');
   }
 
-  // ✅ ดึงข้อมูล Health Metrics ล่าสุด
   const healthMetrics = await prisma.healthMetrics.findFirst({
     where: { userId },
     orderBy: { createdAt: 'desc' },
@@ -52,7 +50,6 @@ export async function generateMealPlan(userId, days) {
     throw new Error('Health metrics not found');
   }
 
-  // ✅ ดึงค่า week ล่าสุดของผู้ใช้
   const latestWeek = await prisma.meals.findFirst({
     where: { UserId: userId },
     orderBy: { week: 'desc' },
@@ -62,7 +59,6 @@ export async function generateMealPlan(userId, days) {
   const currentWeek = latestWeek?.week ? latestWeek.week + 1 : 1;
   console.log(`📅 Current week: ${currentWeek}`);
 
-  // ✅ ดึงข้อมูล Ingredients ที่มีอยู่
   const ingredientIds = new Set(
     Object.values(days).flatMap((day) => day.ingredients)
   );
@@ -78,7 +74,6 @@ export async function generateMealPlan(userId, days) {
     },
   });
 
-  // 🔥 เช็คว่า AI ส่ง `ingredientId` ที่ไม่มีใน DB มาหรือไม่
   const existingIngredientIds = new Set(
     existingIngredients.map((ing) => ing.id)
   );
@@ -95,7 +90,6 @@ export async function generateMealPlan(userId, days) {
 
   console.log(`✅ All ingredient IDs verified in DB`);
 
-  // ✅ Map Ingredients ให้ตรงกับ Days
   const ingredientMap = new Map(
     existingIngredients.map((ing) => [ing.id, ing])
   );
@@ -111,26 +105,86 @@ export async function generateMealPlan(userId, days) {
     ])
   );
 
-  // ✅ สร้าง Meal Plan ผ่าน OpenAI
+  console.log('📌 Nutrition Goals Before Sending to OpenAI:');
+  console.log(`   🔹 Daily Calories: ${healthMetrics.dailySurplus} kcal`);
+  console.log(`   🔹 Daily Protein: ${healthMetrics.protein}g`);
+  console.log(`   🔹 Daily Fat: ${healthMetrics.fat}g`);
+  console.log(`   🔹 Daily Carbohydrates: ${healthMetrics.carbs}g`);
+
+  console.log('📌 Allowed Ingredients Per Day (Sent to OpenAI):');
+  console.log(JSON.stringify(updatedDays, null, 2));
+
   console.log(`🤖 Sending prompt to OpenAI...`);
   const prompt = `
-  You are a professional nutritionist chef. Please create a meal plan for **Week ${currentWeek}**, covering **7 days (Monday to Sunday)**.
-  Each day must have **Breakfast, Lunch, and Dinner**.
-
-  ### **Allowed Ingredients**
+  You are a highly skilled **nutritionist chef** specializing in scientific meal planning.  
+  Your task is to **generate a precise meal plan** for **Week ${currentWeek}**, covering **exactly 7 days (Monday to Sunday)**.  
+  
+  ---
+  ## **STRICT INSTRUCTIONS (DO NOT BREAK THESE RULES)**
+  1 **MUST create a meal plan for ALL 7 DAYS (Monday to Sunday).**  
+  2 **Each day MUST have exactly 3 meals:** Breakfast, Lunch, and Dinner.  
+  3 **STRICTLY use ONLY the provided ingredients for each specific day.**  
+    - **DO NOT use ingredients that are not listed here.**  
+    - **If any ingredient is missing, the response will be REJECTED.**  
+  4 **Follow these exact nutritional guidelines (MANDATORY - DO NOT IGNORE):**  
+    - **Daily Calories (ABSOLUTE REQUIREMENT):** ${
+      healthMetrics.dailySurplus
+    } kcal (MUST reach this value)  
+    - **Daily Protein:** ${healthMetrics.protein}g  
+    - **Daily Fat:** ${healthMetrics.fat}g  
+    - **Daily Carbohydrates:** ${healthMetrics.carbs}g  
+    - **Nutritional values MUST be calculated based on the actual nutritional values of each ingredient.**  
+    - **Adjust ingredient portions to ensure that daily calories and macros meet the targets.**  
+    - **Each meal should contribute proportionally to the total daily intake (e.g., ~33% per meal).**  
+    - **DO NOT create meals that are too low in calories. If necessary, increase portion sizes.**  
+    - **Recalculate nutrition values after adjusting portions to ensure accuracy.**  
+  5 **If you fail to meet all 4 requirements above, regenerate the entire response.**  
+  
+  ---
+  ## **Allowed Ingredients**
+  **Here is the list of approved ingredients for each day.**  
+  **STRICTLY use only the ingredients listed under each day.**  
+  
   \`\`\`json
   ${JSON.stringify(updatedDays, null, 2)}
   \`\`\`
-
-  ### **Nutrition Goals**
-  - **Daily Surplus Calories**: ${healthMetrics.dailySurplus}
-  - **Daily Protein**: ${healthMetrics.protein}g
-  - **Daily Fat**: ${healthMetrics.fat}g
-  - **Daily Carbohydrates**: ${healthMetrics.carbs}g
+  
+  ---
+  ## **Response Format (DO NOT CHANGE THIS FORMAT)**
+  **The response MUST be a valid JSON object with exactly 7 days and 3 meals per day.**  
+  \`\`\`json
+  {
+    "mealPlan": [
+      {
+        "week": ${currentWeek},
+        "day": "<Monday-Sunday>",
+        "meal": "<Breakfast/Lunch/Dinner>",
+        "menu_name": "<Meal Name in Thai>",
+        "ingredients": [
+          { "id": "<Ingredient ID>", "name": "<Ingredient Name>", "amount": "<Amount in grams>" }
+        ],
+        "cooking_method": "<Cooking instructions in Thai>",
+        "calories": <number> kcal,
+        "protein": <number> g,
+        "fat": <number> g,
+        "carbohydrates": <number> g,
+        "reason": "<Reason for choosing this meal in Thai>"
+      }
+    ]
+  }
+  \`\`\`
+  
+  ---
+  ## **ABSOLUTE RESTRICTIONS (DO NOT VIOLATE)**
+    **DO NOT include any missing or unapproved ingredients.**  
+    **DO NOT skip any day or meal.**  
+    **DO NOT modify the JSON format.**  
+    **DO NOT return additional text or explanation. JSON ONLY.**  
+    **If the response does not strictly follow the rules, REGENERATE until it is correct.**  
   `;
 
   const completion = await openai.beta.chat.completions.parse({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     messages: [
       {
         role: 'system',
@@ -150,7 +204,6 @@ export async function generateMealPlan(userId, days) {
 
   console.log(`✅ Meal Plan successfully generated`);
 
-  // ✅ บันทึก Meal Plan ลงฐานข้อมูล
   await prisma.meals.createMany({
     data: mealPlan.mealPlan.map((meal) => ({
       UserId: userId,
@@ -169,18 +222,15 @@ export async function generateMealPlan(userId, days) {
 
   console.log(`✅ Meals saved to database`);
 
-  // ✅ ดึง ID ของ meals ที่เพิ่งสร้างไป
   const createdMealsList = await prisma.meals.findMany({
     where: { UserId: userId, week: currentWeek },
     select: { id: true, day: true, meal: true },
   });
 
-  // ✅ Map Meal ID กับวันและมื้ออาหาร
   const mealIdMap = new Map(
     createdMealsList.map((meal) => [`${meal.day}-${meal.meal}`, meal.id])
   );
 
-  // ✅ เตรียมข้อมูล meal_Ingredients
   const mealIngredientsData = mealPlan.mealPlan.flatMap((meal) =>
     meal.ingredients.map((ing) => ({
       mealId: mealIdMap.get(`${meal.day}-${meal.meal}`),
@@ -189,7 +239,6 @@ export async function generateMealPlan(userId, days) {
     }))
   );
 
-  // ✅ บันทึก meal_Ingredients ลงฐานข้อมูล
   await prisma.meal_Ingredients.createMany({ data: mealIngredientsData });
 
   console.log(`✅ Meal Ingredients saved to database`);
