@@ -31,9 +31,14 @@ const MealPlanResponseSchema = z.object({
 });
 
 export async function generateMealPlan(userId, days) {
+  console.log(`🚀 Generating meal plan for userId: ${userId}`);
+
   // ✅ ดึงข้อมูลผู้ใช้
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) throw new Error('User not found');
+  if (!user) {
+    console.error(`❌ User not found: ${userId}`);
+    throw new Error('User not found');
+  }
 
   // ✅ ดึงข้อมูล Health Metrics ล่าสุด
   const healthMetrics = await prisma.healthMetrics.findFirst({
@@ -41,7 +46,11 @@ export async function generateMealPlan(userId, days) {
     orderBy: { createdAt: 'desc' },
     select: { dailySurplus: true, protein: true, fat: true, carbs: true },
   });
-  if (!healthMetrics) throw new Error('Health metrics not found');
+
+  if (!healthMetrics) {
+    console.error(`❌ Health metrics not found for userId: ${userId}`);
+    throw new Error('Health metrics not found');
+  }
 
   // ✅ ดึงค่า week ล่าสุดของผู้ใช้
   const latestWeek = await prisma.meals.findFirst({
@@ -49,7 +58,9 @@ export async function generateMealPlan(userId, days) {
     orderBy: { week: 'desc' },
     select: { week: true },
   });
+
   const currentWeek = latestWeek?.week ? latestWeek.week + 1 : 1;
+  console.log(`📅 Current week: ${currentWeek}`);
 
   // ✅ ดึงข้อมูล Ingredients ที่มีอยู่
   const ingredientIds = new Set(
@@ -66,6 +77,23 @@ export async function generateMealPlan(userId, days) {
       carbohydrates: true,
     },
   });
+
+  // 🔥 เช็คว่า AI ส่ง `ingredientId` ที่ไม่มีใน DB มาหรือไม่
+  const existingIngredientIds = new Set(
+    existingIngredients.map((ing) => ing.id)
+  );
+  const invalidIngredients = [...ingredientIds].filter(
+    (id) => !existingIngredientIds.has(id)
+  );
+
+  if (invalidIngredients.length > 0) {
+    console.error(`❌ Invalid Ingredients:`, invalidIngredients);
+    throw new Error(
+      `Invalid ingredients found: ${invalidIngredients.join(', ')}`
+    );
+  }
+
+  console.log(`✅ All ingredient IDs verified in DB`);
 
   // ✅ Map Ingredients ให้ตรงกับ Days
   const ingredientMap = new Map(
@@ -84,10 +112,11 @@ export async function generateMealPlan(userId, days) {
   );
 
   // ✅ สร้าง Meal Plan ผ่าน OpenAI
+  console.log(`🤖 Sending prompt to OpenAI...`);
   const prompt = `
   You are a professional nutritionist chef. Please create a meal plan for **Week ${currentWeek}**, covering **7 days (Monday to Sunday)**.
   Each day must have **Breakfast, Lunch, and Dinner**.
-  
+
   ### **Allowed Ingredients**
   \`\`\`json
   ${JSON.stringify(updatedDays, null, 2)}
@@ -98,29 +127,6 @@ export async function generateMealPlan(userId, days) {
   - **Daily Protein**: ${healthMetrics.protein}g
   - **Daily Fat**: ${healthMetrics.fat}g
   - **Daily Carbohydrates**: ${healthMetrics.carbs}g
-
-  ### **Response Format**
-  \`\`\`json
-  {
-    "mealPlan": [
-      {
-        "week": <number>,
-        "day": "<Day Name>",
-        "meal": "<Breakfast/Lunch/Dinner>",
-        "menu_name": "<Meal Name in Thai>",
-        "ingredients": [
-          { "id": "<Ingredient ID>", "name": "<Ingredient Name>", "amount": "<Amount in grams>" }
-        ],
-        "cooking_method": "<Cooking instructions in Thai>",
-        "calories": <number>,
-        "protein": <number>,
-        "fat": <number>,
-        "carbohydrates": <number>,
-        "reason": "<Reason for choosing this meal in Thai>"
-      }
-    ]
-  }
-  \`\`\`
   `;
 
   const completion = await openai.beta.chat.completions.parse({
@@ -137,8 +143,12 @@ export async function generateMealPlan(userId, days) {
   });
 
   const mealPlan = completion.choices?.[0]?.message?.parsed;
-  if (!mealPlan || !Array.isArray(mealPlan.mealPlan))
+  if (!mealPlan || !Array.isArray(mealPlan.mealPlan)) {
+    console.error(`❌ Invalid mealPlan data from OpenAI`);
     throw new Error('Invalid mealPlan data');
+  }
+
+  console.log(`✅ Meal Plan successfully generated`);
 
   // ✅ บันทึก Meal Plan ลงฐานข้อมูล
   await prisma.meals.createMany({
@@ -156,6 +166,33 @@ export async function generateMealPlan(userId, days) {
       reason: meal.reason,
     })),
   });
+
+  console.log(`✅ Meals saved to database`);
+
+  // ✅ ดึง ID ของ meals ที่เพิ่งสร้างไป
+  const createdMealsList = await prisma.meals.findMany({
+    where: { UserId: userId, week: currentWeek },
+    select: { id: true, day: true, meal: true },
+  });
+
+  // ✅ Map Meal ID กับวันและมื้ออาหาร
+  const mealIdMap = new Map(
+    createdMealsList.map((meal) => [`${meal.day}-${meal.meal}`, meal.id])
+  );
+
+  // ✅ เตรียมข้อมูล meal_Ingredients
+  const mealIngredientsData = mealPlan.mealPlan.flatMap((meal) =>
+    meal.ingredients.map((ing) => ({
+      mealId: mealIdMap.get(`${meal.day}-${meal.meal}`),
+      ingredientId: ing.id,
+      quantity: parseFloat(ing.amount) || 0,
+    }))
+  );
+
+  // ✅ บันทึก meal_Ingredients ลงฐานข้อมูล
+  await prisma.meal_Ingredients.createMany({ data: mealIngredientsData });
+
+  console.log(`✅ Meal Ingredients saved to database`);
 
   return mealPlan.mealPlan;
 }

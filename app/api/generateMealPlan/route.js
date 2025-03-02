@@ -19,9 +19,8 @@ export async function POST(req) {
     });
   } catch (error) {
     console.error('❌ Error:', error.message);
-    return new Response(
-      JSON.stringify({ message: error.message || 'Internal server error' }),
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ message: 'Internal server error' }), {
+      status: 500,
+    });
   }
 }
