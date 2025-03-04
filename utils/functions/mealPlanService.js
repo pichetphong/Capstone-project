@@ -220,6 +220,22 @@ export async function generateMealPlan(userId, days) {
     })),
   });
 
+  const daysSet = new Set(mealPlan.mealPlan.map((meal) => meal.day));
+  const expectedDays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
+  if (expectedDays.some((day) => !daysSet.has(day))) {
+    console.error('❌ AI did not return all 7 days!');
+    throw new Error('❌ AI response is incomplete. Please try again.');
+  }
+
   console.log(`✅ Meals saved to database`);
 
   const createdMealsList = await prisma.meals.findMany({
