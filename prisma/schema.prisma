@@ -23,6 +23,7 @@ model User {
 
   // One-to-many relationship with HealthMetrics
   healthMetrics HealthMetrics[]
+  Meals         Meals[]
 }
 
 model HealthMetrics {
@@ -86,4 +87,39 @@ model Ingredients {
   carbohydrates Float
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  Meal_Ingredients Meal_Ingredients[]
+}
+
+model Meal_Ingredients {
+  id        String   @id @default(uuid())
+  quantity  Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mealId       String
+  meal         Meals       @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  ingredientId String
+  ingredient   Ingredients @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+}
+
+model Meals {
+  id             String   @id @default(uuid())
+  week           Int
+  day            String // Monday, Tuesday, ...
+  meal           String // Breakfast, Lunch, Dinner
+  name           String
+  cooking_method String
+  calories       Float
+  protein        Float
+  fat            Float
+  carbohydrates  Float
+  reason         String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  UserId String
+  user   User   @relation(fields: [UserId], references: [id], onDelete: Cascade)
+
+  Meal_Ingredients Meal_Ingredients[]
 }

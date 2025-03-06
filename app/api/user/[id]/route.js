@@ -8,7 +8,7 @@ export async function GET(req, context) {
   try {
     const user = await prisma.user.findUnique({
       where: { id },
-      include: { healthMetrics: true },
+      include: { healthMetrics: true, Meals: true },
     });
 
     if (!user) {
@@ -35,7 +35,7 @@ export async function GET(req, context) {
 
 export async function PUT(req, context) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     const body = await req.json();
     const { name, email } = body;
 
@@ -48,15 +48,18 @@ export async function PUT(req, context) {
       });
     }
 
-    // Regular Expression สำหรับตรวจสอบรูปแบบของ Email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!name || !email || !emailRegex.test(email)) {
-      return new Response(JSON.stringify({ error: 'Invalid name or email' }), {
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return new Response(JSON.stringify({ error: 'Email already in use' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
+    // อัปเดตข้อมูล
     const updatedUser = await prisma.user.update({
       where: { id },
       data: { name, email },
@@ -67,7 +70,6 @@ export async function PUT(req, context) {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    // P2025 คือ Error ที่ Prisma แจ้งว่าไม่มีข้อมูลให้ update/delete
     if (error.code === 'P2025') {
       return new Response(JSON.stringify({ error: 'User not found' }), {
         status: 404,
