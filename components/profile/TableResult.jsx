@@ -1,5 +1,7 @@
 'use client';
 
+import { useSession } from 'next-auth/react';
+
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -15,108 +17,389 @@ import { Label } from '../ui/label';
 import { Button } from '../ui/button';
 
 export default function TableResult() {
+  const { data: session, status } = useSession();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState('');
+  const [gender, setGender] = useState('');
+  const [age, setAge] = useState('');
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
+  const [goal, setGoal] = useState('');
+  const [dietType, setDietType] = useState('');
+  const [activityLevel, setActivityLevel] = useState('');
+
+  const userId = session?.user?.id;
+
+  useEffect(() => {
+    if (!userId || data) return;
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/api/user/${userId}`);
+        if (!res.ok) throw new Error('Failed to fetch user data');
+
+        const json = await res.json();
+        setData(json);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [userId, data]);
+
+  const handleUpdate = async () => {
+    setLoading(true);
+    setMessage('');
+
+    const userId = session?.user?.id;
+    if (!userId) {
+      setMessage('User ID not found');
+
+      setLoading(false);
+      return;
+    }
+
+    const payload = {
+      userId: userId,
+      age: age ? parseInt(age, 10) : null,
+      weight: weight ? parseFloat(weight) : null,
+      height: height ? parseFloat(height) : null,
+      gender: gender ? gender.toUpperCase() : null,
+      goal: goal ? goal.toUpperCase() : null,
+      dietType: dietType ? dietType.toUpperCase() : null,
+      activityLevel: activityLevel ? activityLevel.toUpperCase() : null,
+    };
+
+    if (Object.values(payload).includes(null)) {
+      setMessage('Some fields are missing');
+      setLoading(false);
+
+      throw new Error('Failed to update user data');
+    }
+
+    try {
+      const res = await fetch('http://localhost:3000/api/kcalCalculator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorResponse = await res.json();
+        throw new Error(
+          errorResponse.message || 'Failed to calculate calories'
+        );
+      }
+
+      const data = await res.json();
+      window.location.reload();
+      setMessage('Calories calculated successfully!');
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (status === 'loading' || loading) return <p>Loading...</p>;
+
+  if (!userId) return <p className="text-red-500">User ID not found</p>;
+
+  if (error) return <p className="text-red-500">Error: {error}</p>;
+
+  const latestHealthMetrics = data?.healthMetrics?.length
+    ? data.healthMetrics.reduce((latest, current) =>
+        new Date(current.createdAt) > new Date(latest.createdAt)
+          ? current
+          : latest
+      )
+    : null;
+
+  if (!latestHealthMetrics)
+    return (
+      <>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="secondary">Update</Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogTitle>Edit Details</DialogTitle>
+            <DialogDescription>
+              Adjust your fitness goals and preferences.
+            </DialogDescription>
+            <Card>
+              <CardContent className="space-y-2">
+                <div className="space-y-1">
+                  <Label htmlFor="gender">Gender</Label>
+                  <Input
+                    id="gender"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                    id="age"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="weight">Weight</Label>
+                  <Input
+                    id="weight"
+                    value={weight}
+                    onChange={(e) => setWeight(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="height">Height</Label>
+                  <Input
+                    id="height"
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="goal">Goal</Label>
+                  <select
+                    id="goal"
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                    className="border rounded-md p-2 w-full"
+                  >
+                    <option value="" disabled>
+                      Select your goal
+                    </option>
+                    <option value="LOSE_WEIGHT">Lose Weight</option>
+                    <option value="MAINTAIN">Maintain</option>
+                    <option value="GAIN_WEIGHT">Gain Weight</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="dietType">Diet Type</Label>
+                  <select
+                    id="dietType"
+                    value={dietType}
+                    onChange={(e) => setDietType(e.target.value)}
+                    className="border rounded-md p-2 w-full"
+                  >
+                    <option value="" disabled>
+                      Select your diet type
+                    </option>
+                    <option value="LOW_CARB">Low Carb</option>
+                    <option value="BALANCED">Balanced</option>
+                    <option value="HIGH_PROTEIN">High Protein</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="activityLevel">Activity Level</Label>
+                  <select
+                    id="activityLevel"
+                    value={activityLevel}
+                    onChange={(e) => setActivityLevel(e.target.value)}
+                    className="border rounded-md p-2 w-full"
+                  >
+                    <option value="" disabled>
+                      Select your activity level
+                    </option>
+                    <option value="SEDENTARY">Sedentary</option>
+                    <option value="LIGHTLY_ACTIVE">Lightly Active</option>
+                    <option value="MODERATELY_ACTIVE">Moderately Active</option>
+                    <option value="VERY_ACTIVE">Very Active</option>
+                    <option value="SUPER_ACTIVE">Super Active</option>
+                  </select>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={handleUpdate}>Save changes</Button>
+              </CardFooter>
+            </Card>
+            {message && <p className=" text-sm mt-2">!! {message} !!</p>}
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+
   return (
-    <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl text-white font-semibold">
-      <Table>
-        <TableBody>
-          <TableRow>
-            <TableCell className="w-[100px]">Gender</TableCell>
-            <TableCell className="w-[50px]">:</TableCell>
-            <TableCell className="min-w-[100px]">MEAL</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Age</TableCell>
-            <TableCell>:</TableCell>
-            <TableCell>18</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Weight</TableCell>
-            <TableCell>:</TableCell>
-            <TableCell>65</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Height</TableCell>
-            <TableCell>:</TableCell>
-            <TableCell>175</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>Goal</TableCell>
-            <TableCell>:</TableCell>
-            <TableCell>MAINTAIN</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>DietType</TableCell>
-            <TableCell>:</TableCell>
-            <TableCell>BALANCED</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>ActivityLevel</TableCell>
-            <TableCell>:</TableCell>
-            <TableCell>SEDENTARY</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>BMI</TableCell>
-            <TableCell>:</TableCell>
-            <TableCell>18</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>BMR</TableCell>
-            <TableCell>:</TableCell>
-            <TableCell>65</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>TDEE</TableCell>
-            <TableCell>:</TableCell>
-            <TableCell>175</TableCell>
-          </TableRow>
-          <TableRow className="hover:bg-transparent">
-            <TableCell>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="secondary">Update</Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-lg">
-                  <DialogTitle>Edit Details</DialogTitle>
-                  <DialogDescription>
-                    Adjust your fitness goals and preferences.
-                  </DialogDescription>
-                  <Card>
-                    <CardContent className="space-y-2">
-                      <div className="space-y-1">
-                        <Label htmlFor="goal">Age</Label>
-                        <Input id="goal" defaultValue="18" />
-                      </div>
-                      <div className="space-y-1">
-                        <Label htmlFor="diet">Weight</Label>
-                        <Input id="diet" defaultValue="65" />
-                      </div>
-                      <div className="space-y-1">
-                        <Label htmlFor="activity">Height</Label>
-                        <Input id="activity" defaultValue="175" />
-                      </div>
-                      <div className="space-y-1">
-                        <Label htmlFor="activity">Goal</Label>
-                        <Input id="activity" defaultValue="MAINTAIN" />
-                      </div>
-                      <div className="space-y-1">
-                        <Label htmlFor="activity">DietType</Label>
-                        <Input id="activity" defaultValue="BALANCED" />
-                      </div>
-                      <div className="space-y-1">
-                        <Label htmlFor="activity">ActivityLevel</Label>
-                        <Input id="activity" defaultValue="SEDENTARY" />
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button>Save changes</Button>
-                    </CardFooter>
-                  </Card>
-                </DialogContent>
-              </Dialog>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </div>
+    status === 'authenticated' &&
+    session.user && (
+      <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl text-white font-semibold">
+        <Table>
+          <TableBody>
+            <TableRow>
+              <TableCell className="w-[100px]">Gender</TableCell>
+              <TableCell className="w-[50px]">:</TableCell>
+              <TableCell className="min-w-[100px]">
+                {latestHealthMetrics.gender}
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Age</TableCell>
+              <TableCell>:</TableCell>
+              <TableCell>{latestHealthMetrics.age}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Weight</TableCell>
+              <TableCell>:</TableCell>
+              <TableCell>{latestHealthMetrics.weight}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Height</TableCell>
+              <TableCell>:</TableCell>
+              <TableCell>{latestHealthMetrics.height}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Goal</TableCell>
+              <TableCell>:</TableCell>
+              <TableCell>{latestHealthMetrics.goal}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>DietType</TableCell>
+              <TableCell>:</TableCell>
+              <TableCell>{latestHealthMetrics.dietType}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>ActivityLevel</TableCell>
+              <TableCell>:</TableCell>
+              <TableCell>{latestHealthMetrics.activityLevel}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>BMI</TableCell>
+              <TableCell>:</TableCell>
+              <TableCell>{latestHealthMetrics.bmi}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>BMR</TableCell>
+              <TableCell>:</TableCell>
+              <TableCell>{latestHealthMetrics.bmr}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>TDEE</TableCell>
+              <TableCell>:</TableCell>
+              <TableCell>{latestHealthMetrics.tdee}</TableCell>
+            </TableRow>
+            <TableRow className="hover:bg-transparent">
+              <TableCell>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary">Update</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg">
+                    <DialogTitle>Edit Details</DialogTitle>
+                    <DialogDescription>
+                      Adjust your fitness goals and preferences.
+                    </DialogDescription>
+                    <Card>
+                      <CardContent className="space-y-2">
+                        <div className="space-y-1">
+                          <Label htmlFor="gender">Gender</Label>
+                          <Input
+                            id="gender"
+                            value={gender}
+                            onChange={(e) => setGender(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="age">Age</Label>
+                          <Input
+                            id="age"
+                            value={age}
+                            onChange={(e) => setAge(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="weight">Weight</Label>
+                          <Input
+                            id="weight"
+                            value={weight}
+                            onChange={(e) => setWeight(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="height">Height</Label>
+                          <Input
+                            id="height"
+                            value={height}
+                            onChange={(e) => setHeight(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="goal">Goal</Label>
+                          <select
+                            id="goal"
+                            value={goal}
+                            onChange={(e) => setGoal(e.target.value)}
+                            className="border rounded-md p-2 w-full"
+                          >
+                            <option value="" disabled>
+                              Select your goal
+                            </option>
+                            <option value="LOSE_WEIGHT">Lose Weight</option>
+                            <option value="MAINTAIN">Maintain</option>
+                            <option value="GAIN_WEIGHT">Gain Weight</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label htmlFor="dietType">Diet Type</Label>
+                          <select
+                            id="dietType"
+                            value={dietType}
+                            onChange={(e) => setDietType(e.target.value)}
+                            className="border rounded-md p-2 w-full"
+                          >
+                            <option value="" disabled>
+                              Select your diet type
+                            </option>
+                            <option value="LOW_CARB">Low Carb</option>
+                            <option value="BALANCED">Balanced</option>
+                            <option value="HIGH_PROTEIN">High Protein</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label htmlFor="activityLevel">Activity Level</Label>
+                          <select
+                            id="activityLevel"
+                            value={activityLevel}
+                            onChange={(e) => setActivityLevel(e.target.value)}
+                            className="border rounded-md p-2 w-full"
+                          >
+                            <option value="" disabled>
+                              Select your activity level
+                            </option>
+                            <option value="SEDENTARY">Sedentary</option>
+                            <option value="LIGHTLY_ACTIVE">
+                              Lightly Active
+                            </option>
+                            <option value="MODERATELY_ACTIVE">
+                              Moderately Active
+                            </option>
+                            <option value="VERY_ACTIVE">Very Active</option>
+                            <option value="SUPER_ACTIVE">Super Active</option>
+                          </select>
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button onClick={handleUpdate}>Save changes</Button>
+                      </CardFooter>
+                    </Card>
+                  </DialogContent>
+                </Dialog>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+    )
   );
 }

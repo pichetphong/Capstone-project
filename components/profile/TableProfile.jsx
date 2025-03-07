@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -26,9 +26,75 @@ import { Button } from '../ui/button';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function TableProfile() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const userId = session?.user?.id;
+
+  useEffect(() => {
+    if (!userId) return;
+
+    console.log('Fetching user data for:', userId);
+
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/api/user/${userId}`);
+        if (!res.ok) throw new Error('Failed to fetch user data');
+
+        const json = await res.json();
+
+        setData(json);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [userId]);
+
+  const handleUpdate = async () => {
+    if (!userId) {
+      setMessage('User ID not found');
+      return;
+    }
+
+    setLoading(true);
+    setMessage('');
+
+    try {
+      const res = await fetch(`http://localhost:3000/api/user/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email }),
+      });
+
+      if (!res.ok) throw new Error('Failed to update user data');
+
+      await update();
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (status === 'loading' || loading) return <p>Loading...</p>;
+
+  if (!userId) return <p className="text-red-500">User ID not found</p>;
+
+  if (error) return <p className="text-red-500">Error: {error}</p>;
+
+  const user = data;
+  if (!user || !user.id) return <p>No user Found.</p>;
 
   return (
     status === 'authenticated' &&
@@ -40,24 +106,12 @@ export default function TableProfile() {
               <TableRow>
                 <TableCell className="w-[100px]">Email</TableCell>
                 <TableCell className="w-[50px]">:</TableCell>
-                <TableCell className="min-w-[100px]">
-                  {session.user.email}
-                </TableCell>
+                <TableCell className="min-w-[100px]">{user.email}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>:</TableCell>
-                <TableCell>{session.user.name}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Password</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell className="password flex items-center justify-between">
-                  {showPassword ? 'มะบอกหรอกน้าา' : '••••••••••'}
-                  <button onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </TableCell>
+                <TableCell>{user.name}</TableCell>
               </TableRow>
 
               <TableRow className="hover:bg-transparent">
@@ -91,19 +145,23 @@ export default function TableProfile() {
                                 <Label htmlFor="name">Name</Label>
                                 <Input
                                   id="name"
-                                  defaultValue={session.user.name}
+                                  value={name}
+                                  onChange={(e) => setName(e.target.value)}
                                 />
                               </div>
                               <div className="space-y-1">
-                                <Label htmlFor="username">Email</Label>
+                                <Label htmlFor="email">Email</Label>
                                 <Input
                                   id="email"
-                                  defaultValue={session.user.email}
+                                  value={email}
+                                  onChange={(e) => setEmail(e.target.value)}
                                 />
                               </div>
                             </CardContent>
                             <CardFooter>
-                              <Button>Save changes</Button>
+                              <Button onClick={handleUpdate} disabled={loading}>
+                                {loading ? 'Updating...' : 'Save changes'}
+                              </Button>
                             </CardFooter>
                           </Card>
                         </TabsContent>
@@ -136,6 +194,10 @@ export default function TableProfile() {
                       </Tabs>
                     </DialogContent>
                   </Dialog>
+                </TableCell>
+                <TableCell />
+                <TableCell>
+                  {message && <p className=" text-sm mt-2">!! {message} !!</p>}
                 </TableCell>
               </TableRow>
             </TableBody>

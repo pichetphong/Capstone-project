@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 export default function profile() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
 
   const router = useRouter();
 
@@ -17,35 +17,39 @@ export default function profile() {
     if (status === 'unauthenticated') {
       router.push('/signin');
     }
-  }, [status]);
 
-  console.log('session', session);
-  console.log('status', status);
+    if (status === 'authenticated' && !session?.user?.id) {
+      update();
+    }
+  }, [status, session]);
 
   return (
-    <>
-      <section className="container mx-auto my-5 px-6 py-5 bg-maroon rounded-2xl">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <h1 className="text-2xl md:text-6xl font-bold mb-2 text-white">
-              Profile
-            </h1>
-            <TableProfile />
+    status === 'authenticated' &&
+    session.user && (
+      <>
+        <section className="container mx-auto my-5 px-6 py-5 bg-maroon rounded-2xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <h1 className="text-2xl md:text-6xl font-bold mb-2 text-white">
+                Profile
+              </h1>
+              <TableProfile />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-6xl font-bold mb-2 text-white">
+                Result
+              </h1>
+              <TableResult />
+            </div>
           </div>
-          <div>
+          <div className="">
             <h1 className="text-2xl md:text-6xl font-bold mb-2 text-white">
-              Result
+              Meals
             </h1>
-            <TableResult />
+            <Meals />
           </div>
-        </div>
-        <div className="">
-          <h1 className="text-2xl md:text-6xl font-bold mb-2 text-white">
-            Meals
-          </h1>
-          <Meals />
-        </div>
-      </section>
-    </>
+        </section>
+      </>
+    )
   );
 }

@@ -18,8 +18,6 @@ export async function GET(req, context) {
       });
     }
 
-    console.log(user);
-
     return new Response(JSON.stringify(user), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -47,6 +45,15 @@ export async function PUT(req, context) {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+    if (!name || !email) {
+      return new Response(
+        JSON.stringify({ error: 'Name and email are required' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -65,6 +72,7 @@ export async function PUT(req, context) {
       data: { name, email },
     });
 
+    console.log('Updated user:', updatedUser);
     return new Response(JSON.stringify(updatedUser), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
