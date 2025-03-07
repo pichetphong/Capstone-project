@@ -29,15 +29,13 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen ">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
+    <div className="flex items-center justify-center my-10 ">
+      <div className="w-full max-w-md p-8 bg-maroon rounded-lg shadow-md">
         <div className="flex flex-col items-center">
           <Link href="/">
             <img src="/images/logo.png" alt="Logo" className="w-16 h-16 mb-4" />
           </Link>
-          <h1 className="text-3xl font-bold text-blacky mb-6">
-            Create account
-          </h1>
+          <h1 className="text-3xl font-bold text-white mb-6">Create account</h1>
         </div>
         <form className="space-y-4" onSubmit={handleSumit}>
           {error && (
@@ -49,62 +47,66 @@ export default function SignupPage() {
             onChange={(e) => setName(e.target.value)}
             type="name"
             placeholder="name"
-            className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon"
+            className="w-full px-4 py-2 border rounded-lg text-white "
           />
           <Input
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="email address"
-            className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon"
+            className="w-full px-4 py-2 border rounded-lg text-white "
           />
           <Input
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             placeholder="password"
-            className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon"
+            className="w-full px-4 py-2 border rounded-lg text-white "
           />
           <Input
             onChange={(e) => setConfirmPassword(e.target.value)}
             type="password"
             placeholder="confirm password"
-            className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon"
+            className="w-full px-4 py-2 border rounded-lg text-white "
           />
           <Button
             type="submit"
             variant="outlin3"
-            className="w-full px-4 py-2 bg-primary text-primary-foreground "
+            className="w-full px-4 py-2 text-black "
           >
             create account
           </Button>
         </form>
         <div className="flex items-center justify-center my-4">
-          <span className="text-blacky text-sm">or sign up with</span>
+          <span className="text-black text-sm">or sign up with</span>
         </div>
         <div className="flex items-center justify-center">
-          <button className="flex items-center px-4 py-2 border rounded-lg hover:bg-gray-100 focus:outline-none">
+          <Button
+            type="submit"
+            variant="outlin3"
+            className="flex items-center px-4 py-2 border rounded-lg text-black "
+          >
             <img
               src="/icons8-google.svg"
               alt="Google"
               className="w-5 h-5 mr-2"
             />
-            <span className="text-blacky">Google</span>
-          </button>
+            Google
+          </Button>
         </div>
-        <p className="mt-6 text-xs text-center text-blacky">
-          By creating an account you agree to My app{' '}
-          <a href="#" className="text-maroon hover:underline">
+        <p className="mt-6 text-xs text-center text-black">
+          By creating an account you agree to My app <br />
+          <a href="#" className="text-white hover:underline">
             Term of Services
           </a>{' '}
           and{' '}
-          <a href="#" className="text-maroon hover:underline">
+          <a href="#" className="text-white hover:underline">
             Privacy Policy
           </a>
         </p>
-        <p className="mt-4 text-xs text-center text-blacky">
+        <p className="mt-4 text-xs text-center text-black">
           Have an account?{' '}
           <Link
             href="/signin"
-            className="text-maroon font-medium hover:underline"
+            className="text-white font-medium hover:underline"
           >
             Log in
           </Link>

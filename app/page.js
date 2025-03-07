@@ -7,8 +7,6 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <>
-      {/* <Header /> */}
-      {/* Hero Section */}
       <section className="container mx-auto px-6 text-center pt-20 pb-5 my-5 bg-maroon rounded-2xl">
         <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
           One Tools For Doing it
@@ -22,31 +20,20 @@ export default function Home() {
           the company
         </p>
 
-        {/* <button
-          className="inline-block px-8 py-3 bg-white text-blacky rounded-lg text-lg
-          hover:bg-gray-300 transition-colors shadow-lg"
-        >
-          Get Started
-        </button> */}
         <Button variant="secondary" size="lg">
-          <Link href="/signin">Get Started</Link>
+          <Link href="/plan">Get Started</Link>
         </Button>
 
-        {/* Image Section */}
         <div className="mt-10">
           <Image
-            src="/images/bluebox.png" // Path ไปยังรูปภาพในโฟลเดอร์ public
+            src="/images/bluebox.png"
             alt="Healthy food items"
-            width={800} // กำหนดความกว้าง
-            height={300} // กำหนดความสูง
+            width={800}
+            height={300}
             className="rounded-lg mx-auto"
           />
         </div>
       </section>
-
-      {/* Additional Sections */}
-      {/* สามารถเพิ่มส่วนอื่นๆ ตามต้องการ */}
-      {/* <Footer /> */}
     </>
   );
 }

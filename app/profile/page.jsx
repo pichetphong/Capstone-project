@@ -1,10 +1,27 @@
 'use client';
 
-import TableProfile from './components/TableProfile';
-import TableResult from './components/TableResult';
-import Meals from './components/Meals';
+import TableProfile from '../../components/profile/TableProfile';
+import TableResult from '../../components/profile/TableResult';
+import Meals from '../../components/profile/Meals';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function profile() {
+  const { data: session, status } = useSession();
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/signin');
+    }
+  }, [status]);
+
+  console.log('session', session);
+  console.log('status', status);
+
   return (
     <>
       <section className="container mx-auto my-5 px-6 py-5 bg-maroon rounded-2xl">
