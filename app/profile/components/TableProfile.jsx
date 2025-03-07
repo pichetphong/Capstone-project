@@ -58,7 +58,7 @@ export default function TableProfile() {
               <TableCell>Password</TableCell>
               <TableCell>:</TableCell>
               <TableCell className="password flex items-center justify-between">
-                {showPassword ? '1242523' : '••••••••••'}
+                {showPassword ? 'มะบอกหรอกน้าา' : '••••••••••'}
                 <button onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -69,11 +69,12 @@ export default function TableProfile() {
               <TableCell>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button>Edit Profile</Button>
+                    <Button variant="secondary">Edit Profile</Button>
                   </DialogTrigger>
 
                   <DialogContent className="max-w-lg">
-                    {/* Tabs ที่ซ่อนอยู่ใน Modal */}
+                    <DialogTitle>Edit Profile</DialogTitle>
+                    <DialogDescription>Adjust your Profile.</DialogDescription>
                     <Tabs defaultValue="account" className="w-full">
                       <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="account">Account</TabsTrigger>

@@ -2,6 +2,7 @@
 
 import TableProfile from './components/TableProfile';
 import TableResult from './components/TableResult';
+import Meals from './components/Meals';
 
 export default function profile() {
   return (
@@ -20,6 +21,12 @@ export default function profile() {
             </h1>
             <TableResult />
           </div>
+        </div>
+        <div className="">
+          <h1 className="text-2xl md:text-6xl font-bold mb-2 text-white">
+            Meals
+          </h1>
+          <Meals />
         </div>
       </section>
     </>

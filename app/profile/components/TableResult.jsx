@@ -9,7 +9,6 @@ import {
   DialogDescription,
 } from '../../../components/ui/dialog';
 import { Card, CardContent, CardFooter } from '../../../components/ui/card';
-import { Tabs } from '../../../components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -79,7 +78,7 @@ export default function TableResult() {
             <TableCell>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button>Update</Button>
+                  <Button variant="secondary">Update</Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-lg">
                   <DialogTitle>Edit Details</DialogTitle>

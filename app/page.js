@@ -28,7 +28,7 @@ export default function Home() {
         >
           Get Started
         </button> */}
-        <Button size="lg">
+        <Button variant="secondary" size="lg">
           <Link href="/signin">Get Started</Link>
         </Button>
 
