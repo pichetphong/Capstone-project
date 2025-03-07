@@ -23,11 +23,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex-col min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
         <Provider>
           <Header />
-          {children}
+
+          {/* ใช้ flex-grow เพื่อให้ส่วนนี้ขยายเต็มที่และดัน Footer ลงล่าง */}
+          <main className="flex-grow">{children}</main>
+
           <Footer />
         </Provider>
       </body>
