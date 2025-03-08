@@ -23,7 +23,54 @@ export default function Meals() {
         if (!res.ok) throw new Error('Failed to fetch user data');
 
         const json = await res.json();
-        setMeals(json.Meals || []);
+        const allMeals = json.Meals || [];
+
+        if (allMeals.length === 0) {
+          setMeals([]);
+          return;
+        }
+
+        // ✅ หาค่า createdAt ที่มากที่สุด (ล่าสุด)
+        const latestCreatedAt = Math.max(
+          ...allMeals.map((meal) => new Date(meal.createdAt).getTime())
+        );
+
+        // ✅ ดึงเฉพาะ Meals ที่มี createdAt เป็นค่าล่าสุด
+        const latestMeals = allMeals.filter(
+          (meal) => new Date(meal.createdAt).getTime() === latestCreatedAt
+        );
+
+        // ✅ เรียงลำดับวันจาก Monday → Sunday
+        const dayOrder = [
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+          'Sunday',
+        ];
+
+        latestMeals.sort((a, b) => {
+          return dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
+        });
+
+        // ✅ จัดกลุ่มตามวัน
+        const groupedMeals = latestMeals.reduce((acc, meal) => {
+          if (!acc[meal.day]) acc[meal.day] = [];
+          acc[meal.day].push(meal);
+          return acc;
+        }, {});
+
+        // ✅ เรียงลำดับมื้ออาหาร Breakfast → Lunch → Dinner
+        Object.keys(groupedMeals).forEach((day) => {
+          groupedMeals[day].sort((a, b) => {
+            const mealOrder = { Breakfast: 1, Lunch: 2, Dinner: 3 };
+            return mealOrder[a.meal] - mealOrder[b.meal];
+          });
+        });
+
+        setMeals(groupedMeals);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -38,25 +85,12 @@ export default function Meals() {
   if (!userId) return <p className="text-red-500">User ID not found</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
 
-  const groupedMeals = meals.reduce((acc, meal) => {
-    if (!acc[meal.day]) acc[meal.day] = [];
-    acc[meal.day].push(meal);
-    return acc;
-  }, {});
-
-  Object.keys(groupedMeals).forEach((day) => {
-    groupedMeals[day].sort((a, b) => {
-      const order = { Breakfast: 1, Lunch: 2, Dinner: 3 };
-      return order[a.meal] - order[b.meal];
-    });
-  });
-
   return (
     status === 'authenticated' &&
     session.user && (
       <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl text-white font-semibold">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {Object.entries(groupedMeals).map(([day, dayMeals]) => (
+          {Object.entries(meals).map(([day, dayMeals]) => (
             <div key={day}>
               <div className="text-xl md:text-3xl font-bold mt-3 text-white">
                 {day}
@@ -101,6 +135,9 @@ export default function Meals() {
                                 {meal.carbohydrates}g
                               </span>
                             </div>
+                            <span className="text-sm italic text-gray-600">
+                              🔪 Cooking: {meal.cooking_method}
+                            </span>
                             <span className="text-sm italic text-gray-600">
                               💡 Reason: {meal.reason}
                             </span>
