@@ -196,12 +196,17 @@ export default function TableProfile() {
                   </Dialog>
                 </TableCell>
                 <TableCell />
-                <TableCell>
-                  {message && <p className=" text-sm mt-2">!! {message} !!</p>}
-                </TableCell>
+                <TableCell></TableCell>
               </TableRow>
             </TableBody>
           </Table>
+          {message && (
+            <div className=" text-sm mt-2">
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2">
+                {message}
+              </div>
+            </div>
+          )}
         </div>
       </>
     )

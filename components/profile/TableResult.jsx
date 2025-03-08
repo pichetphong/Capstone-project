@@ -78,13 +78,6 @@ export default function TableResult() {
       activityLevel: activityLevel ? activityLevel.toUpperCase() : null,
     };
 
-    if (Object.values(payload).includes(null)) {
-      setMessage('Some fields are missing');
-      setLoading(false);
-
-      throw new Error('Failed to update user data');
-    }
-
     try {
       const res = await fetch('http://localhost:3000/api/kcalCalculator', {
         method: 'POST',
@@ -92,12 +85,7 @@ export default function TableResult() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const errorResponse = await res.json();
-        throw new Error(
-          errorResponse.message || 'Failed to calculate calories'
-        );
-      }
+      if (!res.ok) throw new Error('Failed to update user data');
 
       const data = await res.json();
       window.location.reload();
@@ -113,7 +101,7 @@ export default function TableResult() {
   const dateOptions = healthMetricsList
     .map((metric) => ({
       id: metric.id,
-      date: new Date(metric.createdAt).toLocaleDateString(),
+      date: new Date(metric.createdAt).toISOString().split('T')[0],
     }))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -125,9 +113,9 @@ export default function TableResult() {
   }, [dateOptions]);
 
   // 📌 หา Health Metrics ตามวันที่ที่เลือก
-  const selectedMetrics = healthMetricsList.find(
-    (metric) => metric.id === selectedDate
-  );
+  const selectedMetrics =
+    healthMetricsList.find((metric) => metric.id === selectedDate) ||
+    healthMetricsList[0]; // ให้ default เป็นค่าล่าสุด
 
   if (status === 'loading' || loading) return <p>Loading...</p>;
 
@@ -148,7 +136,7 @@ export default function TableResult() {
       <>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="secondary">Update</Button>
+            <Button variant="secondary">Create</Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogTitle>Edit Details</DialogTitle>
@@ -158,17 +146,10 @@ export default function TableResult() {
             <Card>
               <CardContent className="space-y-2">
                 <div className="space-y-1">
-                  <Label htmlFor="gender">Gender</Label>
-                  <Input
-                    id="gender"
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-1">
                   <Label htmlFor="age">Age</Label>
                   <Input
                     id="age"
+                    type="number"
                     value={age}
                     onChange={(e) => setAge(e.target.value)}
                   />
@@ -177,6 +158,7 @@ export default function TableResult() {
                   <Label htmlFor="weight">Weight</Label>
                   <Input
                     id="weight"
+                    type="number"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                   />
@@ -185,9 +167,25 @@ export default function TableResult() {
                   <Label htmlFor="height">Height</Label>
                   <Input
                     id="height"
+                    type="number"
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
                   />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="gender">Gender</Label>
+                  <select
+                    id="gender"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className="border rounded-md p-2 w-full"
+                  >
+                    <option value="" disabled>
+                      Select your gender
+                    </option>
+                    <option value="FEMALE">FEMALE</option>
+                    <option value="MALE">MALE</option>
+                  </select>
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="goal">Goal</Label>
@@ -224,7 +222,7 @@ export default function TableResult() {
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="activityLevel">Activity Level</Label>
+                  <Label htmlFor="activityLevel">Activity</Label>
                   <select
                     id="activityLevel"
                     value={activityLevel}
@@ -232,7 +230,7 @@ export default function TableResult() {
                     className="border rounded-md p-2 w-full"
                   >
                     <option value="" disabled>
-                      Select your activity level
+                      Select your activity
                     </option>
                     <option value="SEDENTARY">Sedentary</option>
                     <option value="LIGHTLY_ACTIVE">Lightly Active</option>
@@ -276,16 +274,11 @@ export default function TableResult() {
           <Table>
             <TableBody>
               <TableRow>
-                <TableCell className="w-[100px]">Gender</TableCell>
+                <TableCell className="w-[100px]">Age</TableCell>
                 <TableCell className="w-[50px]">:</TableCell>
                 <TableCell className="min-w-[100px]">
-                  {selectedMetrics.gender}
+                  {selectedMetrics.age}
                 </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Age</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{selectedMetrics.age}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>Weight</TableCell>
@@ -298,6 +291,11 @@ export default function TableResult() {
                 <TableCell>{selectedMetrics.height}</TableCell>
               </TableRow>
               <TableRow>
+                <TableCell>Gender</TableCell>
+                <TableCell>:</TableCell>
+                <TableCell>{selectedMetrics.gender}</TableCell>
+              </TableRow>
+              <TableRow>
                 <TableCell>Goal</TableCell>
                 <TableCell>:</TableCell>
                 <TableCell>{selectedMetrics.goal}</TableCell>
@@ -308,7 +306,7 @@ export default function TableResult() {
                 <TableCell>{selectedMetrics.dietType}</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Activity Level</TableCell>
+                <TableCell>Activity</TableCell>
                 <TableCell>:</TableCell>
                 <TableCell>{selectedMetrics.activityLevel}</TableCell>
               </TableRow>
@@ -341,17 +339,10 @@ export default function TableResult() {
                       <Card>
                         <CardContent className="space-y-2">
                           <div className="space-y-1">
-                            <Label htmlFor="gender">Gender</Label>
-                            <Input
-                              id="gender"
-                              value={gender}
-                              onChange={(e) => setGender(e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-1">
                             <Label htmlFor="age">Age</Label>
                             <Input
                               id="age"
+                              type="number"
                               value={age}
                               onChange={(e) => setAge(e.target.value)}
                             />
@@ -360,6 +351,7 @@ export default function TableResult() {
                             <Label htmlFor="weight">Weight</Label>
                             <Input
                               id="weight"
+                              type="number"
                               value={weight}
                               onChange={(e) => setWeight(e.target.value)}
                             />
@@ -368,9 +360,25 @@ export default function TableResult() {
                             <Label htmlFor="height">Height</Label>
                             <Input
                               id="height"
+                              type="number"
                               value={height}
                               onChange={(e) => setHeight(e.target.value)}
                             />
+                          </div>
+                          <div className="space-y-1">
+                            <Label htmlFor="gender">Gender</Label>
+                            <select
+                              id="gender"
+                              value={gender}
+                              onChange={(e) => setGender(e.target.value)}
+                              className="border rounded-md p-2 w-full"
+                            >
+                              <option value="" disabled>
+                                Select your gender
+                              </option>
+                              <option value="FEMALE">FEMALE</option>
+                              <option value="MALE">MALE</option>
+                            </select>
                           </div>
                           <div className="space-y-1">
                             <Label htmlFor="goal">Goal</Label>
@@ -407,9 +415,7 @@ export default function TableResult() {
                           </div>
 
                           <div className="space-y-1">
-                            <Label htmlFor="activityLevel">
-                              Activity Level
-                            </Label>
+                            <Label htmlFor="activityLevel">Activity</Label>
                             <select
                               id="activityLevel"
                               value={activityLevel}
@@ -417,7 +423,7 @@ export default function TableResult() {
                               className="border rounded-md p-2 w-full"
                             >
                               <option value="" disabled>
-                                Select your activity level
+                                Select your activity
                               </option>
                               <option value="SEDENTARY">Sedentary</option>
                               <option value="LIGHTLY_ACTIVE">
@@ -438,11 +444,20 @@ export default function TableResult() {
                     </DialogContent>
                   </Dialog>
                 </TableCell>
+                <TableCell></TableCell>
+                <TableCell></TableCell>
               </TableRow>
             </TableBody>
           </Table>
         ) : (
           <p className="text-red-500">No health metrics found.</p>
+        )}
+        {message && (
+          <div className=" text-sm mt-2">
+            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2">
+              {message}
+            </div>
+          </div>
         )}
       </div>
     )
