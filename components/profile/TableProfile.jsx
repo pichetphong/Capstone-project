@@ -41,8 +41,6 @@ export default function TableProfile() {
   useEffect(() => {
     if (!userId) return;
 
-    console.log('Fetching user data for:', userId);
-
     const fetchData = async () => {
       try {
         const res = await fetch(`http://localhost:3000/api/user/${userId}`);
@@ -88,13 +86,16 @@ export default function TableProfile() {
   };
 
   if (status === 'loading' || loading) return <p>Loading...</p>;
-
   if (!userId) return <p className="text-red-500">User ID not found</p>;
-
   if (error) return <p className="text-red-500">Error: {error}</p>;
 
   const user = data;
   if (!user || !user.id) return <p>No user Found.</p>;
+
+  const details = [
+    { label: 'Email', key: 'email' },
+    { label: 'Name', key: 'name' },
+  ];
 
   return (
     status === 'authenticated' &&
@@ -103,17 +104,13 @@ export default function TableProfile() {
         <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl text-white font-semibold">
           <Table>
             <TableBody>
-              <TableRow>
-                <TableCell className="w-[100px]">Email</TableCell>
-                <TableCell className="w-[50px]">:</TableCell>
-                <TableCell className="min-w-[100px]">{user.email}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{user.name}</TableCell>
-              </TableRow>
-
+              {details.map(({ label, key }) => (
+                <TableRow key={key}>
+                  <TableCell className="w-[100px]">{label}</TableCell>
+                  <TableCell className="w-[50px]">:</TableCell>
+                  <TableCell className="min-w-[100px]">{user[key]}</TableCell>
+                </TableRow>
+              ))}
               <TableRow className="hover:bg-transparent">
                 <TableCell>
                   <Dialog>

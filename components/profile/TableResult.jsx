@@ -131,6 +131,19 @@ export default function TableResult() {
       )
     : null;
 
+  const metrics = [
+    { label: 'Age', key: 'age' },
+    { label: 'Weight', key: 'weight' },
+    { label: 'Height', key: 'height' },
+    { label: 'Gender', key: 'gender' },
+    { label: 'Goal', key: 'goal' },
+    { label: 'Diet Type', key: 'dietType' },
+    { label: 'Activity', key: 'activityLevel' },
+    { label: 'BMI', key: 'bmi' },
+    { label: 'BMR', key: 'bmr' },
+    { label: 'TDEE', key: 'tdee' },
+  ];
+
   if (!latestHealthMetrics)
     return (
       <>
@@ -273,58 +286,15 @@ export default function TableResult() {
         {selectedMetrics ? (
           <Table>
             <TableBody>
-              <TableRow>
-                <TableCell className="w-[100px]">Age</TableCell>
-                <TableCell className="w-[50px]">:</TableCell>
-                <TableCell className="min-w-[100px]">
-                  {selectedMetrics.age}
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Weight</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{selectedMetrics.weight}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Height</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{selectedMetrics.height}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Gender</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{selectedMetrics.gender}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Goal</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{selectedMetrics.goal}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Diet Type</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{selectedMetrics.dietType}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Activity</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{selectedMetrics.activityLevel}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>BMI</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{selectedMetrics.bmi}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>BMR</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{selectedMetrics.bmr}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>TDEE</TableCell>
-                <TableCell>:</TableCell>
-                <TableCell>{selectedMetrics.tdee}</TableCell>
-              </TableRow>
+              {metrics.map(({ label, key }) => (
+                <TableRow key={key}>
+                  <TableCell className="w-[100px]">{label}</TableCell>
+                  <TableCell className="w-[50px]">:</TableCell>
+                  <TableCell className="min-w-[100px]">
+                    {selectedMetrics[key]}
+                  </TableCell>
+                </TableRow>
+              ))}
               <TableRow className="hover:bg-transparent">
                 <TableCell>
                   <Dialog>
