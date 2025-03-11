@@ -1,4 +1,6 @@
-import { AlignLeft, CircleUserRound } from 'lucide-react';
+'use client';
+
+import { AlignLeft } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +14,8 @@ import { Button } from '../ui/button';
 import UserIcon from './UserIcon';
 import Link from 'next/link';
 import { links } from '../../utils/links';
+
+import { signOut } from 'next-auth/react';
 
 const DropdownListMenu = () => {
   return (
@@ -33,11 +37,14 @@ const DropdownListMenu = () => {
               </DropdownMenuItem>
             );
           })}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>
+            <button onClick={() => signOut({ callbackUrl: '/' })}>
+              Log out
+            </button>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {/* <AlignLeft />
-      <CircleUserRound /> */}
     </>
   );
 };
