@@ -266,7 +266,7 @@ export default function TableResult() {
   return (
     status === 'authenticated' &&
     session.user && (
-      <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl text-white font-semibold">
+      <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl  ">
         <Card className="mb-4">
           <div className="">
             <select
@@ -288,7 +288,9 @@ export default function TableResult() {
             <TableBody>
               {metrics.map(({ label, key }) => (
                 <TableRow key={key}>
-                  <TableCell className="w-[100px]">{label}</TableCell>
+                  <TableCell className="w-[100px] font-semibold">
+                    {label}
+                  </TableCell>
                   <TableCell className="w-[50px]">:</TableCell>
                   <TableCell className="min-w-[100px]">
                     {selectedMetrics[key]}

@@ -7,21 +7,21 @@ import Link from 'next/link';
 export default function Home() {
   return (
     <>
-      <section className="container mx-auto px-6 text-center pt-20 pb-5 my-5 bg-maroon rounded-2xl">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+      <section className="container mx-auto px-6 text-center pt-20 pb-5 my-5  rounded-2xl">
+        <h1 className="text-4xl md:text-6xl font-bold mb-6 ">
           One Tools For Doing it
           <br />
-          <span className="text-white">All Together</span>
+          <span className="">All Together</span>
         </h1>
 
-        <p className="text-xl font-thin text-white mb-8 max-w-3xl mx-auto">
+        <p className="text-xl font-thin  mb-8 max-w-3xl mx-auto">
           We enables you to achieve clarity and significant results on a large
           scale by linking tasks and workflows to the overarching objectives of
           the company
         </p>
 
-        <Button variant="secondary" size="lg">
-          <Link href="/plan">Get Started</Link>
+        <Button variant="" size="lg">
+          <Link href="/planmeals">Get Started</Link>
         </Button>
 
         <div className="mt-10">

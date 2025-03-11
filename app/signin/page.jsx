@@ -18,8 +18,6 @@ export default function SigninPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Form Submitted:', { email, password });
-
       if (!email || !password) {
         throw new Error('All fields are required');
       }
@@ -31,8 +29,7 @@ export default function SigninPage() {
       });
 
       if (result.error) {
-        console.error('Sign in error:', result.error);
-        return false;
+        throw new Error('Invalid email or password');
       }
 
       router.push('/profile');

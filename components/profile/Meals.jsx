@@ -15,7 +15,6 @@ export default function Meals() {
 
   useEffect(() => {
     if (!userId) return;
-    console.log('Fetching meals for:', userId);
 
     const fetchData = async () => {
       try {
@@ -88,7 +87,7 @@ export default function Meals() {
   return (
     status === 'authenticated' &&
     session.user && (
-      <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl text-white font-semibold">
+      <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl text-white ">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Object.entries(meals).map(([day, dayMeals]) => (
             <div key={day}>
@@ -100,7 +99,7 @@ export default function Meals() {
                   {dayMeals.map((meal) => (
                     <CarouselItem key={meal.id} className="w-full">
                       <div className="p-1">
-                        <Card className="h-auto rounded-2xl shadow-lg bg-rose-100 text-gray-900">
+                        <Card className="h-auto rounded-2xl shadow-lg  ">
                           <CardContent className="flex flex-col items-center justify-center p-6 space-y-2">
                             <span className="text-2xl font-bold">
                               {meal.meal}
@@ -109,36 +108,22 @@ export default function Meals() {
                               {meal.name}
                             </span>
                             <div className="grid grid-cols-2 gap-2 text-lg">
-                              <span className="font-medium text-gray-800">
-                                🔥 Calories:
-                              </span>
-                              <span className="text-gray-700">
-                                {meal.calories}
-                              </span>
+                              <span className="font-medium ">🔥 Calories:</span>
+                              <span className="">{meal.calories}</span>
 
-                              <span className="font-medium text-gray-800">
-                                💪 Protein:
-                              </span>
-                              <span className="text-gray-700">
-                                {meal.protein}g
-                              </span>
+                              <span className="font-medium ">💪 Protein:</span>
+                              <span className="">{meal.protein}g</span>
 
-                              <span className="font-medium text-gray-800">
-                                🥑 Fat:
-                              </span>
-                              <span className="text-gray-700">{meal.fat}g</span>
+                              <span className="font-medium ">🥑 Fat:</span>
+                              <span className="">{meal.fat}g</span>
 
-                              <span className="font-medium text-gray-800">
-                                🍞 Carbs:
-                              </span>
-                              <span className="text-gray-700">
-                                {meal.carbohydrates}g
-                              </span>
+                              <span className="font-medium ">🍞 Carbs:</span>
+                              <span className="">{meal.carbohydrates}g</span>
                             </div>
-                            <span className="text-sm italic text-gray-600">
+                            <span className="text-sm italic ">
                               🔪 Cooking: {meal.cooking_method}
                             </span>
-                            <span className="text-sm italic text-gray-600">
+                            <span className="text-sm italic ">
                               💡 Reason: {meal.reason}
                             </span>
                           </CardContent>

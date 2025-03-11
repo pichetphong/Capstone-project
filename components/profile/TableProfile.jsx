@@ -101,12 +101,14 @@ export default function TableProfile() {
     status === 'authenticated' &&
     session.user && (
       <>
-        <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl text-white font-semibold">
+        <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl  ">
           <Table>
             <TableBody>
               {details.map(({ label, key }) => (
                 <TableRow key={key}>
-                  <TableCell className="w-[100px]">{label}</TableCell>
+                  <TableCell className="w-[100px] font-semibold">
+                    {label}
+                  </TableCell>
                   <TableCell className="w-[50px]">:</TableCell>
                   <TableCell className="min-w-[100px]">{user[key]}</TableCell>
                 </TableRow>
@@ -115,7 +117,7 @@ export default function TableProfile() {
                 <TableCell>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="secondary">Edit Profile</Button>
+                      <Button variant="">Edit Profile</Button>
                     </DialogTrigger>
 
                     <DialogContent className="max-w-lg">
