@@ -81,6 +81,7 @@ enum ActivityLevel {
 model Ingredients {
   id            String   @id @default(uuid())
   name          String   @unique
+  image         String?  @default("/logo.png")
   categories    String   @default("Uncategorized")
   calories      Float
   protein       Float
