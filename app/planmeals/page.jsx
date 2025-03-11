@@ -48,8 +48,10 @@ export default function PlanMeals() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
+              {/* ✅ ปุ่มเปิด Modal */}
               <Button onClick={() => setOpen(true)}>เลือกวัตถุดิบ</Button>
 
+              {/* ✅ ส่ง `setSelectedItems` ให้ Modal */}
               <IngredientsModal
                 open={open}
                 setOpen={setOpen}
@@ -59,37 +61,39 @@ export default function PlanMeals() {
           </div>
 
           {selectedItems.length > 0 && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>รูป</TableHead>
-                  <TableHead>ชื่อวัตถุดิบ</TableHead>
-                  <TableHead>Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {selectedItems.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell className=" font-semibold">
-                      <img
-                        src={item.img}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded-lg"
-                      />
-                    </TableCell>
-                    <TableCell className="">{item.name}</TableCell>
-                    <TableCell className="">
-                      <Button
-                        variant="destructive"
-                        onClick={() => removeItem(index)}
-                      >
-                        นำออก
-                      </Button>
-                    </TableCell>
+            <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 mt-5 rounded-xl  ">
+              <Table className="">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-auto">ชื่อวัตถุดิบ</TableHead>
+                    <TableHead className="w-auto">แคลอรี่</TableHead>
+                    <TableHead className="w-auto">โปรตีน</TableHead>
+                    <TableHead className="w-auto">ไขมัน</TableHead>
+                    <TableHead className="w-auto">คาร์โบ</TableHead>
+                    <TableHead className="w-auto">Action</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {selectedItems.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell>{item.calories}</TableCell>
+                      <TableCell>{item.protein}</TableCell>
+                      <TableCell>{item.fat}</TableCell>
+                      <TableCell>{item.carbohydrates}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="destructive"
+                          onClick={() => removeItem(index)}
+                        >
+                          นำออก
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </section>
       </>

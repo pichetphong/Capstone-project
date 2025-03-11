@@ -1,44 +1,41 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 
-// ✅ หมวดหมู่และวัตถุดิบ (ใช้ `/images/logo.png` แทน)
-const categories = [
-  {
-    name: 'โปรตีน',
-    img: '/images/logo.png',
-    details: [
-      { name: 'เนื้อหมู', img: '/images/logo.png' },
-      { name: 'ไก่', img: '/images/logo.png' },
-      { name: 'ปลา', img: '/images/logo.png' },
-    ],
-  },
-  {
-    name: 'คาร์โบไฮเดรต',
-    img: '/images/logo.png',
-    details: [
-      { name: 'ข้าว', img: '/images/logo.png' },
-      { name: 'มันฝรั่ง', img: '/images/logo.png' },
-      { name: 'ขนมปัง', img: '/images/logo.png' },
-    ],
-  },
-  {
-    name: 'คาร์โบไฮเดรต',
-    img: '/images/logo.png',
-    details: [
-      { name: 'ข้าว', img: '/images/logo.png' },
-      { name: 'มันฝรั่ง', img: '/images/logo.png' },
-      { name: 'ขนมปัง', img: '/images/logo.png' },
-    ],
-  },
-];
+// ✅ ฟังก์ชันดึงข้อมูลจาก API
+const fetchIngredients = async () => {
+  try {
+    const res = await fetch('http://localhost:3000/api/ingredients');
+    if (!res.ok) throw new Error('Failed to fetch ingredients');
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching ingredients:', error);
+    return [];
+  }
+};
 
 const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
+  const [ingredients, setIngredients] = useState([]); // เก็บข้อมูลวัตถุดิบ
+  const [categories, setCategories] = useState([]); // เก็บหมวดหมู่แบบไม่ซ้ำ
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // ✅ ดึงข้อมูลเมื่อเปิด Modal
+  useEffect(() => {
+    if (open) {
+      fetchIngredients().then((data) => {
+        setIngredients(data);
+        const uniqueCategories = [
+          ...new Set(data.map((item) => item.categories)),
+        ];
+        setCategories(uniqueCategories);
+      });
+    }
+  }, [open]);
 
   return (
     <>
+      {/* Modal หลัก */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg rounded-lg">
           <DialogHeader>
@@ -48,33 +45,25 @@ const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
           </DialogHeader>
 
           <div className="grid grid-cols-2 gap-4">
-            {categories.map((item, index) => (
+            {categories.map((category, index) => (
               <div
                 key={index}
                 className="flex flex-col items-center cursor-pointer"
-                onClick={() => setSelectedCategory(item)}
+                onClick={() => setSelectedCategory(category)}
               >
                 <img
-                  src={item.img}
-                  alt={item.name}
+                  src="/images/logo.png"
+                  alt={category}
                   className="w-24 h-24 object-cover rounded-lg shadow-md"
                 />
-                <span className="mt-2 font-medium">{item.name}</span>
+                <span className="mt-2 font-medium">{category}</span>
               </div>
             ))}
           </div>
-
-          <Button
-            variant="outline"
-            onClick={() => setOpen(false)}
-            className="w-full"
-          >
-            ปิด
-          </Button>
         </DialogContent>
       </Dialog>
 
-      {/* SubModal สำหรับเลือกวัตถุดิบ */}
+      {/* SubModal แสดงวัตถุดิบของหมวดหมู่ที่เลือก */}
       {selectedCategory && (
         <Dialog
           open={!!selectedCategory}
@@ -83,38 +72,32 @@ const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
           <DialogContent className="max-w-md rounded-lg">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">
-                {selectedCategory.name}
+                {selectedCategory}
               </DialogTitle>
             </DialogHeader>
 
             <div className="grid grid-cols-2 gap-4">
-              {selectedCategory.details.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center cursor-pointer"
-                  onClick={() => {
-                    setSelectedItems((prev) => [...prev, item]); // ✅ เพิ่มวัตถุดิบไป Table
-                    setSelectedCategory(null);
-                    setOpen(false);
-                  }}
-                >
-                  <img
-                    src={item.img}
-                    alt={item.name}
-                    className="w-24 h-24 object-cover rounded-lg shadow-md"
-                  />
-                  <span className="mt-2 font-medium">{item.name}</span>
-                </div>
-              ))}
+              {ingredients
+                .filter((item) => item.categories === selectedCategory)
+                .map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col items-center cursor-pointer"
+                    onClick={() => {
+                      setSelectedItems((prev) => [...prev, item]);
+                      setSelectedCategory(null);
+                      setOpen(false);
+                    }}
+                  >
+                    <img
+                      src="/images/logo.png"
+                      alt={item.name}
+                      className="w-24 h-24 object-cover rounded-lg shadow-md"
+                    />
+                    <span className="mt-2 font-medium">{item.name}</span>
+                  </div>
+                ))}
             </div>
-
-            <Button
-              variant="outline"
-              onClick={() => setSelectedCategory(null)}
-              className="w-full"
-            >
-              ปิด
-            </Button>
           </DialogContent>
         </Dialog>
       )}
