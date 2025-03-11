@@ -39,13 +39,13 @@ export default function SigninPage() {
   };
 
   return (
-    <div className="flex items-center justify-center my-10">
-      <div className="w-full max-w-md p-8 bg-maroon rounded-lg shadow-md">
-        <div className="flex flex-col items-center">
+    <div className="flex items-center justify-center my-10 ">
+      <div className="w-full max-w-md p-8  rounded-lg shadow-xl">
+        <div className="flex flex-col items-center ">
           <Link href="/">
             <img src="/images/logo.png" alt="Logo" className="w-16 h-16 mb-4" />
           </Link>
-          <h1 className="text-3xl font-bold text-white mb-6">Log in</h1>
+          <h1 className="text-3xl font-bold  mb-6">Log in</h1>
         </div>
         <form className="space-y-4" onSubmit={handleSubmit}>
           {error && (
@@ -60,7 +60,7 @@ export default function SigninPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="email address"
-            className="w-full px-4 py-2 border rounded-lg text-white "
+            className="w-full px-4 py-2 border rounded-lg  "
           />
           <Input
             id="password"
@@ -68,25 +68,25 @@ export default function SigninPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="password"
-            className="w-full px-4 py-2 border rounded-lg text-white "
+            className="w-full px-4 py-2 border rounded-lg  "
           />
 
           <Button
             type="submit"
             variant="outlin3"
-            className="w-full px-4 py-2 text-black "
+            className="w-full px-4 py-2  "
           >
             Log in
           </Button>
         </form>
         <div className="flex items-center justify-center my-4">
-          <span className="text-black text-sm">or sign in with</span>
+          <span className=" text-sm">or sign in with</span>
         </div>
         <div className="flex items-center justify-center">
           <Button
             type="submit"
             variant="outlin3"
-            className="flex items-center px-4 py-2 border rounded-lg text-black "
+            className="flex items-center px-4 py-2 border rounded-lg  "
           >
             <img
               src="/icons8-google.svg"
@@ -101,11 +101,11 @@ export default function SigninPage() {
         <br />
         <br />
         <br />
-        <p className="mt-4 text-xs text-center text-black">
+        <p className="mt-4 text-xs text-center ">
           Don't have an account?{' '}
           <Link
             href="/signup"
-            className="text-white font-medium hover:underline"
+            className="text-maroon font-medium hover:underline"
           >
             Create account
           </Link>

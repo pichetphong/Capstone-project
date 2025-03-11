@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '../ui/card';
 import { Carousel, CarouselContent, CarouselItem } from '../ui/carousel';
+import { FaSpinner } from 'react-icons/fa';
 
 export default function Meals() {
   const { data: session, status } = useSession();
@@ -80,20 +81,19 @@ export default function Meals() {
     fetchData();
   }, [userId]);
 
-  if (status === 'loading' || loading) return <p>Loading...</p>;
+  if (status === 'loading' || loading)
+    return <FaSpinner className=" animate-spin text-4xl" />;
   if (!userId) return <p className="text-red-500">User ID not found</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
 
   return (
     status === 'authenticated' &&
     session.user && (
-      <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl text-white ">
+      <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl  ">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Object.entries(meals).map(([day, dayMeals]) => (
             <div key={day}>
-              <div className="text-xl md:text-3xl font-bold mt-3 text-white">
-                {day}
-              </div>
+              <div className="text-xl md:text-3xl font-bold mt-3 ">{day}</div>
               <Carousel opts={{ align: 'start' }} className="w-full max-w-none">
                 <CarouselContent>
                   {dayMeals.map((meal) => (

@@ -23,7 +23,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 import { Button } from '../ui/button';
-import { Eye, EyeOff } from 'lucide-react';
+import { FaSpinner } from 'react-icons/fa';
 
 export default function TableProfile() {
   const { data: session, status, update } = useSession();
@@ -85,7 +85,8 @@ export default function TableProfile() {
     }
   };
 
-  if (status === 'loading' || loading) return <p>Loading...</p>;
+  if (status === 'loading' || loading)
+    return <FaSpinner className="animate-spin text-4xl" />;
   if (!userId) return <p className="text-red-500">User ID not found</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '../../components/ui/button';
@@ -13,9 +14,12 @@ import {
   TableRow,
 } from '../../components/ui/table';
 import IngredientsModal from '../../components/meals/IngredientsModal';
+import { FaSpinner } from 'react-icons/fa';
 
 export default function PlanMeals() {
   const { data: session, status, update } = useSession();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
   const router = useRouter();
 
   const days = [
@@ -57,11 +61,57 @@ export default function PlanMeals() {
     }));
   };
 
+  const generateMealPlan = async () => {
+    setLoading(true);
+
+    const payload = {
+      userId: session.user.id,
+      days: Object.keys(mealPlans).reduce((acc, day) => {
+        acc[day] = {
+          ingredients: mealPlans[day].map((item) => item.id),
+        };
+        return acc;
+      }, {}),
+    };
+
+    try {
+      const response = await fetch(
+        'http://localhost:3000/api/generateMealPlan',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to generate meal plan');
+
+      router.push('/profile');
+    } catch (error) {
+      setMessage(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isMealPlanComplete = () => {
+    return days.every((day) => mealPlans[day].length > 0);
+  };
+
   return (
     status === 'authenticated' &&
     session.user && (
       <>
-        <section className="container mx-auto my-5 px-6 py-5 rounded-2xl">
+        {loading && (
+          <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-50 flex justify-center items-center z-50">
+            <FaSpinner className="text-white animate-spin text-4xl" />
+            <p className="ms-5">กำลังสร้างเมนู....</p>
+          </div>
+        )}
+
+        <section className="container mx-auto px-6 py-5 rounded-2xl">
           <div className="flex space-x-2 overflow-x-auto pb-2">
             {days.map((day) => (
               <Button
@@ -74,7 +124,7 @@ export default function PlanMeals() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
             <Button onClick={() => setOpen(true)}>เลือกวัตถุดิบ</Button>
             <IngredientsModal
               open={open}
@@ -84,7 +134,7 @@ export default function PlanMeals() {
           </div>
 
           {mealPlans[selectedDay].length > 0 && (
-            <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 mt-5 rounded-xl">
+            <div className="bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 mt-5 rounded-xl">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -106,10 +156,11 @@ export default function PlanMeals() {
                       <TableCell>{item.carbohydrates}</TableCell>
                       <TableCell>
                         <Button
-                          variant="destructive"
+                          variant="outline"
                           onClick={() => removeItemFromDay(index)}
+                          className="p-2"
                         >
-                          นำออก
+                          <Trash2 size={16} />{' '}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -118,6 +169,23 @@ export default function PlanMeals() {
               </Table>
             </div>
           )}
+          <div className="flex mt-5">
+            <Button
+              className="mr-4"
+              onClick={generateMealPlan}
+              disabled={!isMealPlanComplete() || loading}
+            >
+              {loading ? 'กำลังสร้างเมนู...' : 'สร้างเมนู'}
+            </Button>
+
+            {message && (
+              <div className=" text-sm mt-2">
+                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2">
+                  {message}
+                </div>
+              </div>
+            )}
+          </div>
         </section>
       </>
     )

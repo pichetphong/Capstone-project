@@ -1,23 +1,28 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
-import { Button } from '../ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from '../ui/dialog';
 
-const fetchIngredients = async () => {
-  try {
-    const res = await fetch('http://localhost:3000/api/ingredients');
-    if (!res.ok) throw new Error('Failed to fetch ingredients');
-    return await res.json();
-  } catch (error) {
-    console.error('Error fetching ingredients:', error);
-    return [];
-  }
-};
-
-const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
+export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
   const [ingredients, setIngredients] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [error, setError] = useState('');
+
+  const fetchIngredients = async () => {
+    try {
+      const res = await fetch('http://localhost:3000/api/ingredients');
+      if (!res.ok) throw new Error('Failed to fetch ingredients');
+      return await res.json();
+    } catch (error) {
+      setError(error.message);
+      return [];
+    }
+  };
 
   useEffect(() => {
     if (open) {
@@ -35,11 +40,16 @@ const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg rounded-lg">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
-              เลือกหมวดหมู่
-            </DialogTitle>
-          </DialogHeader>
+          <DialogTitle className="text-xl font-bold">เลือกหมวดหมู่</DialogTitle>
+          <DialogDescription>
+            Make changes to your profile here. Click save when you're done.
+            {error && (
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2">
+                {}
+              </div>
+            )}
+          </DialogDescription>
+
           <div className="grid grid-cols-2 gap-4">
             {categories.map((category, index) => (
               <div
@@ -64,12 +74,14 @@ const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
           open={!!selectedCategory}
           onOpenChange={() => setSelectedCategory(null)}
         >
-          <DialogContent className="max-w-md rounded-lg">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold">
-                {selectedCategory}
-              </DialogTitle>
-            </DialogHeader>
+          <DialogContent className="max-w-lg max-h-[500px] overflow-auto  rounded-lg">
+            <DialogTitle className="text-xl font-bold">
+              {selectedCategory}
+            </DialogTitle>
+            <DialogDescription>
+              Make changes to your profile here. Click save when you're done.
+            </DialogDescription>
+
             <div className="grid grid-cols-2 gap-4">
               {ingredients
                 .filter((item) => item.categories === selectedCategory)
@@ -97,6 +109,4 @@ const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
       )}
     </>
   );
-};
-
-export default IngredientsModal;
+}
