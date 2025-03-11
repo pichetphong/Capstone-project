@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 
-// ✅ ฟังก์ชันดึงข้อมูลจาก API
 const fetchIngredients = async () => {
   try {
     const res = await fetch('http://localhost:3000/api/ingredients');
@@ -16,11 +15,10 @@ const fetchIngredients = async () => {
 };
 
 const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
-  const [ingredients, setIngredients] = useState([]); // เก็บข้อมูลวัตถุดิบ
-  const [categories, setCategories] = useState([]); // เก็บหมวดหมู่แบบไม่ซ้ำ
+  const [ingredients, setIngredients] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // ✅ ดึงข้อมูลเมื่อเปิด Modal
   useEffect(() => {
     if (open) {
       fetchIngredients().then((data) => {
@@ -35,7 +33,6 @@ const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
 
   return (
     <>
-      {/* Modal หลัก */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg rounded-lg">
           <DialogHeader>
@@ -43,7 +40,6 @@ const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
               เลือกหมวดหมู่
             </DialogTitle>
           </DialogHeader>
-
           <div className="grid grid-cols-2 gap-4">
             {categories.map((category, index) => (
               <div
@@ -63,7 +59,6 @@ const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
         </DialogContent>
       </Dialog>
 
-      {/* SubModal แสดงวัตถุดิบของหมวดหมู่ที่เลือก */}
       {selectedCategory && (
         <Dialog
           open={!!selectedCategory}
@@ -75,7 +70,6 @@ const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
                 {selectedCategory}
               </DialogTitle>
             </DialogHeader>
-
             <div className="grid grid-cols-2 gap-4">
               {ingredients
                 .filter((item) => item.categories === selectedCategory)
@@ -84,7 +78,7 @@ const IngredientsModal = ({ open, setOpen, setSelectedItems }) => {
                     key={index}
                     className="flex flex-col items-center cursor-pointer"
                     onClick={() => {
-                      setSelectedItems((prev) => [...prev, item]);
+                      setSelectedItems(item);
                       setSelectedCategory(null);
                       setOpen(false);
                     }}
