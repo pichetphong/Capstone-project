@@ -31,11 +31,11 @@ const MealPlanResponseSchema = z.object({
 });
 
 export async function generateMealPlan(userId, days) {
-  console.log(`🚀 Generating meal plan for userId: ${userId}`);
+  console.log(`Generating meal plan for userId: ${userId}`);
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
-    console.error(`❌ User not found: ${userId}`);
+    console.error(`User not found: ${userId}`);
     throw new Error('User not found');
   }
 
@@ -46,7 +46,7 @@ export async function generateMealPlan(userId, days) {
   });
 
   if (!healthMetrics) {
-    console.error(`❌ Health metrics not found for userId: ${userId}`);
+    console.error(`Health metrics not found for userId: ${userId}`);
     throw new Error('Health metrics not found');
   }
 
@@ -57,7 +57,7 @@ export async function generateMealPlan(userId, days) {
   });
 
   const currentWeek = latestWeek?.week ? latestWeek.week + 1 : 1;
-  console.log(`📅 Current week: ${currentWeek}`);
+  console.log(`Current week: ${currentWeek}`);
 
   const ingredientIds = new Set(
     Object.values(days).flatMap((day) => day.ingredients)
@@ -82,13 +82,13 @@ export async function generateMealPlan(userId, days) {
   );
 
   if (invalidIngredients.length > 0) {
-    console.error(`❌ Invalid Ingredients:`, invalidIngredients);
+    console.error(`Invalid Ingredients:`, invalidIngredients);
     throw new Error(
       `Invalid ingredients found: ${invalidIngredients.join(', ')}`
     );
   }
 
-  console.log(`✅ All ingredient IDs verified in DB`);
+  console.log(`All ingredient IDs verified in DB`);
 
   const ingredientMap = new Map(
     existingIngredients.map((ing) => [ing.id, ing])
@@ -105,13 +105,13 @@ export async function generateMealPlan(userId, days) {
     ])
   );
 
-  console.log('📌 Nutrition Goals Before Sending to OpenAI:');
-  console.log(`   🔹 Daily Calories: ${healthMetrics.dailySurplus} kcal`);
-  console.log(`   🔹 Daily Protein: ${healthMetrics.protein}g`);
-  console.log(`   🔹 Daily Fat: ${healthMetrics.fat}g`);
-  console.log(`   🔹 Daily Carbohydrates: ${healthMetrics.carbs}g`);
+  console.log('Nutrition Goals Before Sending to OpenAI:');
+  console.log(`   Daily Calories: ${healthMetrics.dailySurplus} kcal`);
+  console.log(`   Daily Protein: ${healthMetrics.protein}g`);
+  console.log(`   Daily Fat: ${healthMetrics.fat}g`);
+  console.log(`   Daily Carbohydrates: ${healthMetrics.carbs}g`);
 
-  console.log('📌 Allowed Ingredients Per Day (Sent to OpenAI):');
+  console.log('Allowed Ingredients Per Day (Sent to OpenAI):');
   console.log(JSON.stringify(updatedDays, null, 2));
 
   console.log(`🤖 Sending prompt to OpenAI...`);
@@ -198,11 +198,11 @@ export async function generateMealPlan(userId, days) {
 
   const mealPlan = completion.choices?.[0]?.message?.parsed;
   if (!mealPlan || !Array.isArray(mealPlan.mealPlan)) {
-    console.error(`❌ Invalid mealPlan data from OpenAI`);
+    console.error(`Invalid mealPlan data from OpenAI`);
     throw new Error('Invalid mealPlan data');
   }
 
-  console.log(`✅ Meal Plan successfully generated`);
+  console.log(`Meal Plan successfully generated`);
 
   await prisma.meals.createMany({
     data: mealPlan.mealPlan.map((meal) => ({
@@ -232,11 +232,11 @@ export async function generateMealPlan(userId, days) {
   ];
 
   if (expectedDays.some((day) => !daysSet.has(day))) {
-    console.error('❌ AI did not return all 7 days!');
-    throw new Error('❌ AI response is incomplete. Please try again.');
+    console.error('AI did not return all 7 days!');
+    throw new Error('AI response is incomplete. Please try again.');
   }
 
-  console.log(`✅ Meals saved to database`);
+  console.log(`Meals saved to database`);
 
   const createdMealsList = await prisma.meals.findMany({
     where: { UserId: userId, week: currentWeek },
@@ -257,7 +257,7 @@ export async function generateMealPlan(userId, days) {
 
   await prisma.meal_Ingredients.createMany({ data: mealIngredientsData });
 
-  console.log(`✅ Meal Ingredients saved to database`);
+  console.log(`Meal Ingredients saved to database`);
 
   return mealPlan.mealPlan;
 }

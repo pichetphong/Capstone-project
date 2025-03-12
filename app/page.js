@@ -17,7 +17,7 @@ export default function Home() {
 
   return (
     <section className="relative py-20 px-6 text-center rounded-2xl">
-      <div className="container mx-auto">
+      <div className="container mx-auto ">
         <h1 className="text-4xl md:text-5xl font-bold mb-6" data-aos="fade-up">
           เริ่มต้นการวางแผนมื้ออาหารของคุณ
         </h1>
@@ -38,7 +38,7 @@ export default function Home() {
 
         <div className="mt-10" data-aos="fade-up" data-aos-delay="400">
           <Image
-            src="/images/l2.jpg"
+            src="/images/landing.jpg"
             alt="Healthy food items"
             width={900}
             height={500}

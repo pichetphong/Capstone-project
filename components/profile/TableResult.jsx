@@ -98,7 +98,7 @@ export default function TableResult() {
     }
   };
 
-  // 📌 จัดเรียงวันที่ Health Metrics ล่าสุดขึ้นก่อน
+  // จัดเรียงวันที่ Health Metrics ล่าสุดขึ้นก่อน
   const dateOptions = healthMetricsList
     .map((metric) => ({
       id: metric.id,
@@ -106,14 +106,14 @@ export default function TableResult() {
     }))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  // 📌 ตั้งค่า Default เป็นข้อมูลล่าสุด
+  // ตั้งค่า Default เป็นข้อมูลล่าสุด
   useEffect(() => {
     if (dateOptions.length > 0 && !selectedDate) {
       setSelectedDate(dateOptions[0].id);
     }
   }, [dateOptions]);
 
-  // 📌 หา Health Metrics ตามวันที่ที่เลือก
+  // หา Health Metrics ตามวันที่ที่เลือก
   const selectedMetrics =
     healthMetricsList.find((metric) => metric.id === selectedDate) ||
     healthMetricsList[0]; // ให้ default เป็นค่าล่าสุด

@@ -39,7 +39,7 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg rounded-lg">
+        <DialogContent className="max-w-lg h-[550px] rounded-lg">
           <DialogTitle className="text-xl font-bold">เลือกหมวดหมู่</DialogTitle>
           <DialogDescription>
             กรุณาเลือกหมวดหมู่ที่ต้องการดู
@@ -58,7 +58,7 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
                 onClick={() => setSelectedCategory(category)}
               >
                 <img
-                  src="/images/logo.png"
+                  src={`/images/5group/${category}.png`}
                   alt={category}
                   className="w-24 h-24 object-cover rounded-lg shadow-md"
                 />
@@ -74,7 +74,7 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
           open={!!selectedCategory}
           onOpenChange={() => setSelectedCategory(null)}
         >
-          <DialogContent className="max-w-lg max-h-[500px] overflow-auto  rounded-lg">
+          <DialogContent className="max-w-lg h-[550px] overflow-auto  rounded-lg">
             <DialogTitle className="text-xl font-bold">
               {selectedCategory}
             </DialogTitle>
@@ -96,10 +96,11 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
                     }}
                   >
                     <img
-                      src="/images/logo.png"
+                      src={`/images/ingredients/${item.image}`}
                       alt={item.name}
                       className="w-24 h-24 object-cover rounded-lg shadow-md"
                     />
+
                     <span className="mt-2 font-medium">{item.name}</span>
                   </div>
                 ))}

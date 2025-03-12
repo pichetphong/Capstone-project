@@ -30,17 +30,14 @@ export default function Meals() {
           return;
         }
 
-        // ✅ หาค่า createdAt ที่มากที่สุด (ล่าสุด)
         const latestCreatedAt = Math.max(
           ...allMeals.map((meal) => new Date(meal.createdAt).getTime())
         );
 
-        // ✅ ดึงเฉพาะ Meals ที่มี createdAt เป็นค่าล่าสุด
         const latestMeals = allMeals.filter(
           (meal) => new Date(meal.createdAt).getTime() === latestCreatedAt
         );
 
-        // ✅ เรียงลำดับวันจาก Monday → Sunday
         const dayOrder = [
           'Monday',
           'Tuesday',
@@ -55,14 +52,12 @@ export default function Meals() {
           return dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day);
         });
 
-        // ✅ จัดกลุ่มตามวัน
         const groupedMeals = latestMeals.reduce((acc, meal) => {
           if (!acc[meal.day]) acc[meal.day] = [];
           acc[meal.day].push(meal);
           return acc;
         }, {});
 
-        // ✅ เรียงลำดับมื้ออาหาร Breakfast → Lunch → Dinner
         Object.keys(groupedMeals).forEach((day) => {
           groupedMeals[day].sort((a, b) => {
             const mealOrder = { Breakfast: 1, Lunch: 2, Dinner: 3 };
@@ -97,7 +92,7 @@ export default function Meals() {
                   {dayMeals.map((meal) => (
                     <CarouselItem key={meal.id} className="w-full">
                       <div className="p-1">
-                        <Card className="h-auto rounded-2xl shadow-lg  ">
+                        <Card className="h-[auto] rounded-2xl shadow-lg">
                           <CardContent className="flex flex-col items-center justify-center p-6 space-y-2">
                             <span className="text-2xl font-bold">
                               {meal.meal}
@@ -105,7 +100,19 @@ export default function Meals() {
                             <span className="text-xl font-semibold">
                               {meal.name}
                             </span>
+
                             <div className="grid grid-cols-2 gap-2 text-lg">
+                              <span className="font-medium">
+                                🥘 Ingredients:
+                              </span>
+                              <ul>
+                                {meal.Meal_Ingredients.map((mealIngredient) => (
+                                  <li key={mealIngredient.id}>
+                                    {mealIngredient.ingredient.name} -{' '}
+                                    {mealIngredient.quantity}g
+                                  </li>
+                                ))}
+                              </ul>
                               <span className="font-medium ">🔥 Calories:</span>
                               <span className="">{meal.calories}</span>
 

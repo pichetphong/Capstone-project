@@ -33,7 +33,8 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    const { name, calories, protein, fat, carbohydrates } = body;
+    const { name, calories, protein, fat, carbohydrates, categories, image } =
+      body;
 
     if (!name || !calories || !protein || !fat || !carbohydrates) {
       return new Response(
@@ -64,6 +65,8 @@ export async function POST(req) {
         protein: parseFloat(protein),
         fat: parseFloat(fat),
         carbohydrates: parseFloat(carbohydrates),
+        categories: categories,
+        image: image,
       },
     });
 
