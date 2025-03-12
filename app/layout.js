@@ -31,13 +31,13 @@ export default async function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
         <Provider>
-          <Header />
+          <SessionProvider session={session}>
+            <Header />
 
-          <main className="flex-grow">
-            <SessionProvider session={session}>{children}</SessionProvider>
-          </main>
+            <main className="flex-grow">{children}</main>
 
-          <Footer />
+            <Footer />
+          </SessionProvider>
         </Provider>
       </body>
     </html>

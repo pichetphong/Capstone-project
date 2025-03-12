@@ -86,7 +86,7 @@ export default function PlanMeals() {
         }
       );
 
-      if (!response.ok) throw new Error('Failed to generate meal plan');
+      if (!response.ok) throw new Error('กรุณาลองใหม่อีกครั้ง');
 
       router.push('/profile');
     } catch (error) {
@@ -169,23 +169,21 @@ export default function PlanMeals() {
               </Table>
             </div>
           )}
-          <div className="flex mt-5">
+          <div className="mt-5">
             <Button
-              className="mr-4"
               onClick={generateMealPlan}
               disabled={!isMealPlanComplete() || loading}
             >
               {loading ? 'กำลังสร้างเมนู...' : 'สร้างเมนู'}
             </Button>
-
-            {message && (
-              <div className=" text-sm mt-2">
-                <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2">
-                  {message}
-                </div>
-              </div>
-            )}
           </div>
+          {message && (
+            <div className=" text-sm mt-2 ">
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2">
+                {message}
+              </div>
+            </div>
+          )}
         </section>
       </>
     )

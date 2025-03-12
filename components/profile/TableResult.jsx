@@ -41,7 +41,7 @@ export default function TableResult() {
     const fetchData = async () => {
       try {
         const res = await fetch(`http://localhost:3000/api/user/${userId}`);
-        if (!res.ok) throw new Error('Failed to fetch user data');
+        if (!res.ok) throw new Error('ไม่พบบันชีผู้ใช้');
 
         const json = await res.json();
         setData(json);
@@ -62,7 +62,7 @@ export default function TableResult() {
 
     const userId = session?.user?.id;
     if (!userId) {
-      setMessage('User ID not found');
+      setMessage('ไม่พบไอดีผู้ใช้');
 
       setLoading(false);
       return;
@@ -86,11 +86,11 @@ export default function TableResult() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error('Failed to update user data');
+      if (!res.ok) throw new Error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
 
       const data = await res.json();
       window.location.reload();
-      setMessage('Calories calculated successfully!');
+      setMessage('บันทึกข้อมูลเรียบร้อย');
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -121,10 +121,6 @@ export default function TableResult() {
   if (status === 'loading' || loading)
     return <FaSpinner className=" animate-spin text-4xl" />;
 
-  if (!userId) return <p className="text-red-500">User ID not found</p>;
-
-  if (error) return <p className="text-red-500">Error: {error}</p>;
-
   const latestHealthMetrics = data?.healthMetrics?.length
     ? data.healthMetrics.reduce((latest, current) =>
         new Date(current.createdAt) > new Date(latest.createdAt)
@@ -134,13 +130,13 @@ export default function TableResult() {
     : null;
 
   const metrics = [
-    { label: 'Age', key: 'age' },
-    { label: 'Weight', key: 'weight' },
-    { label: 'Height', key: 'height' },
-    { label: 'Gender', key: 'gender' },
-    { label: 'Goal', key: 'goal' },
-    { label: 'Diet Type', key: 'dietType' },
-    { label: 'Activity', key: 'activityLevel' },
+    { label: 'อายุ', key: 'age' },
+    { label: 'น้ำหนัก', key: 'weight' },
+    { label: 'ส่วนสูง', key: 'height' },
+    { label: 'เพศ', key: 'gender' },
+    { label: 'เป้าหมายการออกกำลังกาย', key: 'goal' },
+    { label: 'วิธีรับประทาน', key: 'dietType' },
+    { label: 'ระดับการออกกำลังกาย', key: 'activityLevel' },
     { label: 'BMI', key: 'bmi' },
     { label: 'BMR', key: 'bmr' },
     { label: 'TDEE', key: 'tdee' },
@@ -151,17 +147,17 @@ export default function TableResult() {
       <>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="secondary">Create</Button>
+            <Button variant="">บันทึกข้อมูลสุขภาพ</Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
-            <DialogTitle>Edit Details</DialogTitle>
+            <DialogTitle>บันทึกข้อมูลสุขภาพ</DialogTitle>
             <DialogDescription>
-              Adjust your fitness goals and preferences.
+              ปรับแต่งเป้าหมายการออกกำลังกายและการบริโภคอาหารของคุณ
             </DialogDescription>
             <Card>
               <CardContent className="space-y-2">
                 <div className="space-y-1">
-                  <Label htmlFor="age">Age</Label>
+                  <Label htmlFor="age">อายุ</Label>
                   <Input
                     id="age"
                     type="number"
@@ -170,7 +166,7 @@ export default function TableResult() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="weight">Weight</Label>
+                  <Label htmlFor="weight">น้ำหนัก</Label>
                   <Input
                     id="weight"
                     type="number"
@@ -179,7 +175,7 @@ export default function TableResult() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="height">Height</Label>
+                  <Label htmlFor="height">ส่วนสูง</Label>
                   <Input
                     id="height"
                     type="number"
@@ -188,7 +184,7 @@ export default function TableResult() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="gender">Gender</Label>
+                  <Label htmlFor="gender">เพศ</Label>
                   <select
                     id="gender"
                     value={gender}
@@ -196,14 +192,14 @@ export default function TableResult() {
                     className="border rounded-md p-2 w-full"
                   >
                     <option value="" disabled>
-                      Select your gender
+                      เลือกเพศของคุณ
                     </option>
-                    <option value="FEMALE">FEMALE</option>
-                    <option value="MALE">MALE</option>
+                    <option value="FEMALE">ผู้หญิง</option>
+                    <option value="MALE">ผู้ชาย</option>
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="goal">Goal</Label>
+                  <Label htmlFor="goal">เป้าหมายการออกกำลังกาย</Label>
                   <select
                     id="goal"
                     value={goal}
@@ -211,16 +207,16 @@ export default function TableResult() {
                     className="border rounded-md p-2 w-full"
                   >
                     <option value="" disabled>
-                      Select your goal
+                      เลือกเป้าหมายการออกกำลังกาย
                     </option>
-                    <option value="LOSE_WEIGHT">Lose Weight</option>
-                    <option value="MAINTAIN">Maintain</option>
-                    <option value="GAIN_WEIGHT">Gain Weight</option>
+                    <option value="LOSE_WEIGHT">ลดน้ำหนัก</option>
+                    <option value="MAINTAIN">คงน้ำหนัก</option>
+                    <option value="GAIN_WEIGHT">เพิ่มน้ำหนัก</option>
                   </select>
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="dietType">Diet Type</Label>
+                  <Label htmlFor="dietType">วิธีรับประทาน</Label>
                   <select
                     id="dietType"
                     value={dietType}
@@ -228,16 +224,16 @@ export default function TableResult() {
                     className="border rounded-md p-2 w-full"
                   >
                     <option value="" disabled>
-                      Select your diet type
+                      เลือกวิธีรับประทาน
                     </option>
-                    <option value="LOW_CARB">Low Carb</option>
-                    <option value="BALANCED">Balanced</option>
-                    <option value="HIGH_PROTEIN">High Protein</option>
+                    <option value="LOW_CARB">แป้งต่ำ</option>
+                    <option value="BALANCED">สมมาตร</option>
+                    <option value="HIGH_PROTEIN">โปรตีนสูง</option>
                   </select>
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="activityLevel">Activity</Label>
+                  <Label htmlFor="activityLevel">ระดับการออกกำลังกาย</Label>
                   <select
                     id="activityLevel"
                     value={activityLevel}
@@ -245,18 +241,22 @@ export default function TableResult() {
                     className="border rounded-md p-2 w-full"
                   >
                     <option value="" disabled>
-                      Select your activity
+                      เลือกระดับการออกกำลังกาย
                     </option>
-                    <option value="SEDENTARY">Sedentary</option>
-                    <option value="LIGHTLY_ACTIVE">Lightly Active</option>
-                    <option value="MODERATELY_ACTIVE">Moderately Active</option>
-                    <option value="VERY_ACTIVE">Very Active</option>
-                    <option value="SUPER_ACTIVE">Super Active</option>
+                    <option value="SEDENTARY">ไม่ออกกำลังกาย</option>
+                    <option value="LIGHTLY_ACTIVE">
+                      สัปดาห์ละประมาณ 1-3 วัน
+                    </option>
+                    <option value="MODERATELY_ACTIVE">
+                      สัปดาห์ละประมาณ 3-5 วัน
+                    </option>
+                    <option value="VERY_ACTIVE">สัปดาห์ละประมาณ 6-7 วัน</option>
+                    <option value="SUPER_ACTIVE">ทุกวันเช้าและเย็น</option>
                   </select>
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleUpdate}>Save changes</Button>
+                <Button onClick={handleUpdate}>บันทึกข้อมูลสุขภาพ</Button>
               </CardFooter>
             </Card>
             {message && <p className=" text-sm mt-2">!! {message} !!</p>}

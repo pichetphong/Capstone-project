@@ -30,16 +30,20 @@ export default function profile() {
         <section className="container mx-auto my-5 px-6 py-5  rounded-2xl">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <h1 className="text-2xl md:text-6xl font-bold mb-2 ">Profile</h1>
+              <h1 className="text-2xl md:text-6xl font-bold mb-4 ">
+                ข้อมูลส่วนตัว
+              </h1>
               <TableProfile />
             </div>
             <div>
-              <h1 className="text-2xl md:text-6xl font-bold mb-2 ">Result</h1>
+              <h1 className="text-2xl md:text-6xl font-bold mb-4 ">
+                ข้อมูลสุขภาพ
+              </h1>
               <TableResult />
             </div>
           </div>
           <div className="">
-            <h1 className="text-2xl md:text-6xl font-bold mb-2 ">Meals</h1>
+            <h1 className="text-2xl md:text-6xl font-bold mb-4 ">เมนูอาหาร</h1>
             <Meals />
           </div>
         </section>

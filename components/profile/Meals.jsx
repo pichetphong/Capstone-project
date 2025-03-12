@@ -20,7 +20,7 @@ export default function Meals() {
     const fetchData = async () => {
       try {
         const res = await fetch(`http://localhost:3000/api/user/${userId}`);
-        if (!res.ok) throw new Error('Failed to fetch user data');
+        if (!res.ok) throw new Error('ไม่พบบันชีผู้ใช้');
 
         const json = await res.json();
         const allMeals = json.Meals || [];
@@ -83,8 +83,6 @@ export default function Meals() {
 
   if (status === 'loading' || loading)
     return <FaSpinner className=" animate-spin text-4xl" />;
-  if (!userId) return <p className="text-red-500">User ID not found</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
 
   return (
     status === 'authenticated' &&
