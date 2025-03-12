@@ -42,7 +42,7 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
         <DialogContent className="max-w-lg rounded-lg">
           <DialogTitle className="text-xl font-bold">เลือกหมวดหมู่</DialogTitle>
           <DialogDescription>
-            Make changes to your profile here. Click save when you're done.
+            กรุณาเลือกหมวดหมู่ที่ต้องการดู
             {error && (
               <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2">
                 {}
@@ -79,7 +79,7 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
               {selectedCategory}
             </DialogTitle>
             <DialogDescription>
-              Make changes to your profile here. Click save when you're done.
+              กรุณาเลือกวัตถุดิบที่ต้องการเพิ่ม
             </DialogDescription>
 
             <div className="grid grid-cols-2 gap-4">

@@ -107,7 +107,7 @@ export default function PlanMeals() {
         {loading && (
           <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-50 flex justify-center items-center z-50">
             <FaSpinner className="text-white animate-spin text-4xl" />
-            <p className="ms-5">กำลังสร้างเมนู....</p>
+            <p className="ms-5">กำลังสร้างแพลนอาหาร....</p>
           </div>
         )}
 
@@ -174,7 +174,7 @@ export default function PlanMeals() {
               onClick={generateMealPlan}
               disabled={!isMealPlanComplete() || loading}
             >
-              {loading ? 'กำลังสร้างเมนู...' : 'สร้างเมนู'}
+              {loading ? 'กำลังสร้างแพลนอาหาร...' : 'สร้างแพลนอาหาร'}
             </Button>
           </div>
           {message && (

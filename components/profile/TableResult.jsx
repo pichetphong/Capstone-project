@@ -269,22 +269,21 @@ export default function TableResult() {
     status === 'authenticated' &&
     session.user && (
       <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl  ">
-        <Card className="mb-4">
-          <div className="">
-            <select
-              id="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="border rounded-md p-2 w-full"
-            >
-              {dateOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.date}
-                </option>
-              ))}
-            </select>
-          </div>
-        </Card>
+        <div className="">
+          <select
+            id="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="border rounded-md p-2 w-full"
+          >
+            {dateOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.date}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {selectedMetrics ? (
           <Table>
             <TableBody>
@@ -303,17 +302,17 @@ export default function TableResult() {
                 <TableCell>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="">Update</Button>
+                      <Button variant="">บันทึกข้อมูลสุขภาพ</Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-lg">
-                      <DialogTitle>Edit Details</DialogTitle>
+                      <DialogTitle>บันทึกข้อมูลสุขภาพ</DialogTitle>
                       <DialogDescription>
-                        Adjust your fitness goals and preferences.
+                        ปรับแต่งเป้าหมายการออกกำลังกายและการบริโภคอาหารของคุณ
                       </DialogDescription>
                       <Card>
                         <CardContent className="space-y-2">
                           <div className="space-y-1">
-                            <Label htmlFor="age">Age</Label>
+                            <Label htmlFor="age">อายุ</Label>
                             <Input
                               id="age"
                               type="number"
@@ -322,7 +321,7 @@ export default function TableResult() {
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label htmlFor="weight">Weight</Label>
+                            <Label htmlFor="weight">น้ำหนัก</Label>
                             <Input
                               id="weight"
                               type="number"
@@ -331,7 +330,7 @@ export default function TableResult() {
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label htmlFor="height">Height</Label>
+                            <Label htmlFor="height">ส่วนสูง</Label>
                             <Input
                               id="height"
                               type="number"
@@ -340,7 +339,7 @@ export default function TableResult() {
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label htmlFor="gender">Gender</Label>
+                            <Label htmlFor="gender">เพศ</Label>
                             <select
                               id="gender"
                               value={gender}
@@ -348,14 +347,14 @@ export default function TableResult() {
                               className="border rounded-md p-2 w-full"
                             >
                               <option value="" disabled>
-                                Select your gender
+                                เลือกเพศของคุณ
                               </option>
-                              <option value="FEMALE">FEMALE</option>
-                              <option value="MALE">MALE</option>
+                              <option value="FEMALE">ผู้หญิง</option>
+                              <option value="MALE">ผู้ชาย</option>
                             </select>
                           </div>
                           <div className="space-y-1">
-                            <Label htmlFor="goal">Goal</Label>
+                            <Label htmlFor="goal">เป้าหมายการออกกำลังกาย</Label>
                             <select
                               id="goal"
                               value={goal}
@@ -363,16 +362,16 @@ export default function TableResult() {
                               className="border rounded-md p-2 w-full"
                             >
                               <option value="" disabled>
-                                Select your goal
+                                เลือกเป้าหมายการออกกำลังกาย
                               </option>
-                              <option value="LOSE_WEIGHT">Lose Weight</option>
-                              <option value="MAINTAIN">Maintain</option>
-                              <option value="GAIN_WEIGHT">Gain Weight</option>
+                              <option value="LOSE_WEIGHT">ลดน้ำหนัก</option>
+                              <option value="MAINTAIN">คงน้ำหนัก</option>
+                              <option value="GAIN_WEIGHT">เพิ่มน้ำหนัก</option>
                             </select>
                           </div>
 
                           <div className="space-y-1">
-                            <Label htmlFor="dietType">Diet Type</Label>
+                            <Label htmlFor="dietType">วิธีรับประทาน</Label>
                             <select
                               id="dietType"
                               value={dietType}
@@ -380,16 +379,18 @@ export default function TableResult() {
                               className="border rounded-md p-2 w-full"
                             >
                               <option value="" disabled>
-                                Select your diet type
+                                เลือกวิธีรับประทาน
                               </option>
-                              <option value="LOW_CARB">Low Carb</option>
-                              <option value="BALANCED">Balanced</option>
-                              <option value="HIGH_PROTEIN">High Protein</option>
+                              <option value="LOW_CARB">แป้งต่ำ</option>
+                              <option value="BALANCED">สมมาตร</option>
+                              <option value="HIGH_PROTEIN">โปรตีนสูง</option>
                             </select>
                           </div>
 
                           <div className="space-y-1">
-                            <Label htmlFor="activityLevel">Activity</Label>
+                            <Label htmlFor="activityLevel">
+                              ระดับการออกกำลังกาย
+                            </Label>
                             <select
                               id="activityLevel"
                               value={activityLevel}
@@ -397,17 +398,21 @@ export default function TableResult() {
                               className="border rounded-md p-2 w-full"
                             >
                               <option value="" disabled>
-                                Select your activity
+                                เลือกระดับการออกกำลังกาย
                               </option>
-                              <option value="SEDENTARY">Sedentary</option>
+                              <option value="SEDENTARY">ไม่ออกกำลังกาย</option>
                               <option value="LIGHTLY_ACTIVE">
-                                Lightly Active
+                                สัปดาห์ละประมาณ 1-3 วัน
                               </option>
                               <option value="MODERATELY_ACTIVE">
-                                Moderately Active
+                                สัปดาห์ละประมาณ 3-5 วัน
                               </option>
-                              <option value="VERY_ACTIVE">Very Active</option>
-                              <option value="SUPER_ACTIVE">Super Active</option>
+                              <option value="VERY_ACTIVE">
+                                สัปดาห์ละประมาณ 6-7 วัน
+                              </option>
+                              <option value="SUPER_ACTIVE">
+                                ทุกวันเช้าและเย็น
+                              </option>
                             </select>
                           </div>
                         </CardContent>
