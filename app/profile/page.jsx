@@ -7,6 +7,7 @@ import Meals from '../../components/profile/Meals';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 export default function profile() {
   const { data: session, status, update } = useSession();
@@ -43,7 +44,11 @@ export default function profile() {
             </div>
           </div>
           <div className="">
-            <h1 className="text-2xl md:text-6xl font-bold mb-4 ">เมนูอาหาร</h1>
+            <Link href="/planmeals">
+              <h1 className="text-2xl md:text-6xl font-bold mb-4 ">
+                เมนูอาหาร
+              </h1>
+            </Link>
             <Meals />
           </div>
         </section>

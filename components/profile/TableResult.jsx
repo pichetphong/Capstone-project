@@ -118,9 +118,6 @@ export default function TableResult() {
     healthMetricsList.find((metric) => metric.id === selectedDate) ||
     healthMetricsList[0]; // ให้ default เป็นค่าล่าสุด
 
-  if (status === 'loading' || loading)
-    return <FaSpinner className=" animate-spin text-4xl" />;
-
   const latestHealthMetrics = data?.healthMetrics?.length
     ? data.healthMetrics.reduce((latest, current) =>
         new Date(current.createdAt) > new Date(latest.createdAt)
@@ -128,6 +125,15 @@ export default function TableResult() {
           : latest
       )
     : null;
+
+  useEffect(() => {
+    if (latestHealthMetrics) {
+      setGender(latestHealthMetrics.gender); // ตั้งค่า gender จากข้อมูลล่าสุด
+    }
+  }, [latestHealthMetrics]);
+
+  if (status === 'loading' || loading)
+    return <FaSpinner className=" animate-spin text-4xl" />;
 
   const metrics = [
     { label: 'อายุ', key: 'age' },
@@ -343,7 +349,7 @@ export default function TableResult() {
                             <select
                               id="gender"
                               value={gender}
-                              onChange={(e) => setGender(e.target.value)}
+                              disabled
                               className="border rounded-md p-2 w-full"
                             >
                               <option value="" disabled>

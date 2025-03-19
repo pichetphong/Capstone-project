@@ -83,7 +83,7 @@ export default function Meals() {
     status === 'authenticated' &&
     session.user && (
       <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl  ">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
           {Object.entries(meals).map(([day, dayMeals]) => (
             <div key={day}>
               <div className="text-xl md:text-3xl font-bold mt-3 ">{day}</div>
