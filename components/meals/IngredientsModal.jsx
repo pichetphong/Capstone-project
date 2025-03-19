@@ -6,12 +6,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from '../ui/dialog';
+import { FaSpinner } from 'react-icons/fa';
 
 export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
   const [ingredients, setIngredients] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const fetchIngredients = async () => {
     try {
@@ -26,12 +28,14 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
 
   useEffect(() => {
     if (open) {
+      setLoading(true);
       fetchIngredients().then((data) => {
         setIngredients(data);
         const uniqueCategories = [
           ...new Set(data.map((item) => item.categories)),
         ];
         setCategories(uniqueCategories);
+        setLoading(false);
       });
     }
   }, [open]);
@@ -50,22 +54,26 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
             )}
           </DialogDescription>
 
-          <div className="grid grid-cols-2 gap-4">
-            {categories.map((category, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center cursor-pointer"
-                onClick={() => setSelectedCategory(category)}
-              >
-                <img
-                  src={`/images/5group/${category}.png`}
-                  alt={category}
-                  className="w-24 h-24 object-cover rounded-lg shadow-md"
-                />
-                <span className="mt-2 font-medium">{category}</span>
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <FaSpinner className=" animate-spin text-4xl" />
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {categories.map((category, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col items-center cursor-pointer"
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  <img
+                    src={`/images/5group/${category}.png`}
+                    alt={category}
+                    className="w-24 h-24 object-cover rounded-lg shadow-md"
+                  />
+                  <span className="mt-2 font-medium">{category}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -82,29 +90,33 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
               กรุณาเลือกวัตถุดิบที่ต้องการเพิ่ม
             </DialogDescription>
 
-            <div className="grid grid-cols-2 gap-4">
-              {ingredients
-                .filter((item) => item.categories === selectedCategory)
-                .map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col items-center cursor-pointer"
-                    onClick={() => {
-                      setSelectedItems(item);
-                      setSelectedCategory(null);
-                      setOpen(false);
-                    }}
-                  >
-                    <img
-                      src={`/images/ingredients/${item.image}`}
-                      alt={item.name}
-                      className="w-24 h-24 object-cover rounded-lg shadow-md"
-                    />
+            {loading ? (
+              <FaSpinner className=" animate-spin text-4xl" />
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                {ingredients
+                  .filter((item) => item.categories === selectedCategory)
+                  .map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex flex-col items-center cursor-pointer"
+                      onClick={() => {
+                        setSelectedItems(item);
+                        setSelectedCategory(null);
+                        setOpen(false);
+                      }}
+                    >
+                      <img
+                        src={`/images/ingredients/${item.image}`}
+                        alt={item.name}
+                        className="w-24 h-24 object-cover rounded-lg shadow-md"
+                      />
 
-                    <span className="mt-2 font-medium">{item.name}</span>
-                  </div>
-                ))}
-            </div>
+                      <span className="mt-2 font-medium">{item.name}</span>
+                    </div>
+                  ))}
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       )}

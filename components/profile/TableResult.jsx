@@ -143,6 +143,12 @@ export default function TableResult() {
     { label: 'เป้าหมายการออกกำลังกาย', key: 'goal' },
     { label: 'วิธีรับประทาน', key: 'dietType' },
     { label: 'ระดับการออกกำลังกาย', key: 'activityLevel' },
+  ];
+
+  const metricsR = [
+    { label: 'เปอร์เซ็นต์ไขมัน', key: 'bodyFat' },
+    { label: 'มวลไขมัน', key: 'fatMass' },
+    { label: 'มวลกล้ามเนื้อ', key: 'leanMass' },
     { label: 'BMI', key: 'bmi' },
     { label: 'BMR', key: 'bmr' },
     { label: 'TDEE', key: 'tdee' },
@@ -274,177 +280,211 @@ export default function TableResult() {
   return (
     status === 'authenticated' &&
     session.user && (
-      <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl  ">
-        <div className="">
-          <select
-            id="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="border rounded-md p-2 w-full"
-          >
-            {dateOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.date}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {selectedMetrics ? (
-          <Table>
-            <TableBody>
-              {metrics.map(({ label, key }) => (
-                <TableRow key={key}>
-                  <TableCell className="w-[100px] font-semibold">
-                    {label}
-                  </TableCell>
-                  <TableCell className="w-[50px]">:</TableCell>
-                  <TableCell className="min-w-[100px]">
-                    {selectedMetrics[key]}
-                  </TableCell>
-                </TableRow>
+      <>
+        <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl  ">
+          <div className="">
+            <select
+              id="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="border rounded-md p-2 w-full"
+            >
+              {dateOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.date}
+                </option>
               ))}
-              <TableRow className="hover:bg-transparent">
-                <TableCell>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="">บันทึกข้อมูลสุขภาพ</Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-lg">
-                      <DialogTitle>บันทึกข้อมูลสุขภาพ</DialogTitle>
-                      <DialogDescription>
-                        ปรับแต่งเป้าหมายการออกกำลังกายและการบริโภคอาหารของคุณ
-                      </DialogDescription>
-                      <Card>
-                        <CardContent className="space-y-2">
-                          <div className="space-y-1">
-                            <Label htmlFor="age">อายุ</Label>
-                            <Input
-                              id="age"
-                              type="number"
-                              value={age}
-                              onChange={(e) => setAge(e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label htmlFor="weight">น้ำหนัก</Label>
-                            <Input
-                              id="weight"
-                              type="number"
-                              value={weight}
-                              onChange={(e) => setWeight(e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label htmlFor="height">ส่วนสูง</Label>
-                            <Input
-                              id="height"
-                              type="number"
-                              value={height}
-                              onChange={(e) => setHeight(e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label htmlFor="gender">เพศ</Label>
-                            <select
-                              id="gender"
-                              value={gender}
-                              disabled
-                              className="border rounded-md p-2 w-full"
-                            >
-                              <option value="" disabled>
-                                เลือกเพศของคุณ
-                              </option>
-                              <option value="FEMALE">ผู้หญิง</option>
-                              <option value="MALE">ผู้ชาย</option>
-                            </select>
-                          </div>
-                          <div className="space-y-1">
-                            <Label htmlFor="goal">เป้าหมายการออกกำลังกาย</Label>
-                            <select
-                              id="goal"
-                              value={goal}
-                              onChange={(e) => setGoal(e.target.value)}
-                              className="border rounded-md p-2 w-full"
-                            >
-                              <option value="" disabled>
-                                เลือกเป้าหมายการออกกำลังกาย
-                              </option>
-                              <option value="LOSE_WEIGHT">ลดน้ำหนัก</option>
-                              <option value="MAINTAIN">คงน้ำหนัก</option>
-                              <option value="GAIN_WEIGHT">เพิ่มน้ำหนัก</option>
-                            </select>
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label htmlFor="dietType">วิธีรับประทาน</Label>
-                            <select
-                              id="dietType"
-                              value={dietType}
-                              onChange={(e) => setDietType(e.target.value)}
-                              className="border rounded-md p-2 w-full"
-                            >
-                              <option value="" disabled>
-                                เลือกวิธีรับประทาน
-                              </option>
-                              <option value="LOW_CARB">แป้งต่ำ</option>
-                              <option value="BALANCED">สมมาตร</option>
-                              <option value="HIGH_PROTEIN">โปรตีนสูง</option>
-                            </select>
-                          </div>
-
-                          <div className="space-y-1">
-                            <Label htmlFor="activityLevel">
-                              ระดับการออกกำลังกาย
-                            </Label>
-                            <select
-                              id="activityLevel"
-                              value={activityLevel}
-                              onChange={(e) => setActivityLevel(e.target.value)}
-                              className="border rounded-md p-2 w-full"
-                            >
-                              <option value="" disabled>
-                                เลือกระดับการออกกำลังกาย
-                              </option>
-                              <option value="SEDENTARY">ไม่ออกกำลังกาย</option>
-                              <option value="LIGHTLY_ACTIVE">
-                                สัปดาห์ละประมาณ 1-3 วัน
-                              </option>
-                              <option value="MODERATELY_ACTIVE">
-                                สัปดาห์ละประมาณ 3-5 วัน
-                              </option>
-                              <option value="VERY_ACTIVE">
-                                สัปดาห์ละประมาณ 6-7 วัน
-                              </option>
-                              <option value="SUPER_ACTIVE">
-                                ทุกวันเช้าและเย็น
-                              </option>
-                            </select>
-                          </div>
-                        </CardContent>
-                        <CardFooter>
-                          <Button onClick={handleUpdate}>Save changes</Button>
-                        </CardFooter>
-                      </Card>
-                    </DialogContent>
-                  </Dialog>
-                </TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        ) : (
-          <p className="text-red-500">No health metrics found.</p>
-        )}
-        {message && (
-          <div className=" text-sm mt-2">
-            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2">
-              {message}
-            </div>
+            </select>
           </div>
-        )}
-      </div>
+
+          {selectedMetrics ? (
+            <Table>
+              <TableBody>
+                {metrics.map(({ label, key }) => (
+                  <TableRow key={key}>
+                    <TableCell className="w-[100px] font-semibold">
+                      {label}
+                    </TableCell>
+                    <TableCell className="w-[50px]">:</TableCell>
+                    <TableCell className="min-w-[100px]">
+                      {selectedMetrics[key]}
+                    </TableCell>
+                  </TableRow>
+                ))}
+
+                <TableRow className="hover:bg-transparent">
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="">บันทึกข้อมูลสุขภาพ</Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-lg">
+                        <DialogTitle>บันทึกข้อมูลสุขภาพ</DialogTitle>
+                        <DialogDescription>
+                          ปรับแต่งเป้าหมายการออกกำลังกายและการบริโภคอาหารของคุณ
+                        </DialogDescription>
+                        <Card>
+                          <CardContent className="space-y-2">
+                            <div className="space-y-1">
+                              <Label htmlFor="age">อายุ</Label>
+                              <Input
+                                id="age"
+                                type="number"
+                                value={age}
+                                onChange={(e) => setAge(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="weight">น้ำหนัก</Label>
+                              <Input
+                                id="weight"
+                                type="number"
+                                value={weight}
+                                onChange={(e) => setWeight(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="height">ส่วนสูง</Label>
+                              <Input
+                                id="height"
+                                type="number"
+                                value={height}
+                                onChange={(e) => setHeight(e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="gender">เพศ</Label>
+                              <select
+                                id="gender"
+                                value={gender}
+                                disabled
+                                className="border rounded-md p-2 w-full"
+                              >
+                                <option value="" disabled>
+                                  เลือกเพศของคุณ
+                                </option>
+                                <option value="FEMALE">ผู้หญิง</option>
+                                <option value="MALE">ผู้ชาย</option>
+                              </select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="goal">
+                                เป้าหมายการออกกำลังกาย
+                              </Label>
+                              <select
+                                id="goal"
+                                value={goal}
+                                onChange={(e) => setGoal(e.target.value)}
+                                className="border rounded-md p-2 w-full"
+                              >
+                                <option value="" disabled>
+                                  เลือกเป้าหมายการออกกำลังกาย
+                                </option>
+                                <option value="LOSE_WEIGHT">ลดน้ำหนัก</option>
+                                <option value="MAINTAIN">คงน้ำหนัก</option>
+                                <option value="GAIN_WEIGHT">
+                                  เพิ่มน้ำหนัก
+                                </option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-1">
+                              <Label htmlFor="dietType">วิธีรับประทาน</Label>
+                              <select
+                                id="dietType"
+                                value={dietType}
+                                onChange={(e) => setDietType(e.target.value)}
+                                className="border rounded-md p-2 w-full"
+                              >
+                                <option value="" disabled>
+                                  เลือกวิธีรับประทาน
+                                </option>
+                                <option value="LOW_CARB">แป้งต่ำ</option>
+                                <option value="BALANCED">สมมาตร</option>
+                                <option value="HIGH_PROTEIN">โปรตีนสูง</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-1">
+                              <Label htmlFor="activityLevel">
+                                ระดับการออกกำลังกาย
+                              </Label>
+                              <select
+                                id="activityLevel"
+                                value={activityLevel}
+                                onChange={(e) =>
+                                  setActivityLevel(e.target.value)
+                                }
+                                className="border rounded-md p-2 w-full"
+                              >
+                                <option value="" disabled>
+                                  เลือกระดับการออกกำลังกาย
+                                </option>
+                                <option value="SEDENTARY">
+                                  ไม่ออกกำลังกาย
+                                </option>
+                                <option value="LIGHTLY_ACTIVE">
+                                  สัปดาห์ละประมาณ 1-3 วัน
+                                </option>
+                                <option value="MODERATELY_ACTIVE">
+                                  สัปดาห์ละประมาณ 3-5 วัน
+                                </option>
+                                <option value="VERY_ACTIVE">
+                                  สัปดาห์ละประมาณ 6-7 วัน
+                                </option>
+                                <option value="SUPER_ACTIVE">
+                                  ทุกวันเช้าและเย็น
+                                </option>
+                              </select>
+                            </div>
+                          </CardContent>
+                          <CardFooter>
+                            <Button onClick={handleUpdate}>
+                              บันทึกข้อมูลสุขภาพ
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+                  <TableCell></TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-red-500">No health metrics found.</p>
+          )}
+          {message && (
+            <div className=" text-sm mt-2">
+              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-2">
+                {message}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl ">
+          {selectedMetrics ? (
+            <Table>
+              <TableBody>
+                {metricsR.map(({ label, key }) => (
+                  <TableRow key={key}>
+                    <TableCell className="w-[100px] font-semibold">
+                      {label}
+                    </TableCell>
+                    <TableCell className="w-[50px]">:</TableCell>
+                    <TableCell className="min-w-[100px]">
+                      {selectedMetrics[key]}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-red-500">No health metrics found.</p>
+          )}
+        </div>
+      </>
     )
   );
 }
