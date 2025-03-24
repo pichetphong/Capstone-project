@@ -27,7 +27,7 @@ export async function POST(req) {
       activityLevel,
     } = body;
 
-    // ✅ ดึงข้อมูล User
+    // ดึงข้อมูล User
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
     if (!user) {
@@ -47,7 +47,6 @@ export async function POST(req) {
     //   dietType,
     // });
 
-    // ✅ เรียกใช้ Calculation
     const result = Calculation({
       weight,
       height,
@@ -66,7 +65,7 @@ export async function POST(req) {
       );
     }
 
-    // ✅ บันทึกค่า Health Metrics
+    // บันทึกค่า Health Metrics
     const healthMetrics = await prisma.healthMetrics.create({
       data: {
         weight,

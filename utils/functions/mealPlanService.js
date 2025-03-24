@@ -31,11 +31,11 @@ const MealPlanResponseSchema = z.object({
 });
 
 export async function generateMealPlan(userId, days) {
-  console.log(`🚀 Generating meal plan for userId: ${userId}`);
+  console.log(`Generating meal plan for userId: ${userId}`);
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) {
-    console.error(`❌ User not found: ${userId}`);
+    console.error(`User not found: ${userId}`);
     throw new Error('User not found');
   }
 
@@ -46,7 +46,7 @@ export async function generateMealPlan(userId, days) {
   });
 
   if (!healthMetrics) {
-    console.error(`❌ Health metrics not found for userId: ${userId}`);
+    console.error(`Health metrics not found for userId: ${userId}`);
     throw new Error('Health metrics not found');
   }
 
@@ -57,7 +57,7 @@ export async function generateMealPlan(userId, days) {
   });
 
   const currentWeek = latestWeek?.week ? latestWeek.week + 1 : 1;
-  console.log(`📅 Current week: ${currentWeek}`);
+  console.log(`Current week: ${currentWeek}`);
 
   const ingredientIds = new Set(
     Object.values(days).flatMap((day) => day.ingredients)
@@ -82,13 +82,13 @@ export async function generateMealPlan(userId, days) {
   );
 
   if (invalidIngredients.length > 0) {
-    console.error(`❌ Invalid Ingredients:`, invalidIngredients);
+    console.error(`Invalid Ingredients:`, invalidIngredients);
     throw new Error(
       `Invalid ingredients found: ${invalidIngredients.join(', ')}`
     );
   }
 
-  console.log(`✅ All ingredient IDs verified in DB`);
+  console.log(`All ingredient IDs verified in DB`);
 
   const ingredientMap = new Map(
     existingIngredients.map((ing) => [ing.id, ing])
@@ -105,82 +105,118 @@ export async function generateMealPlan(userId, days) {
     ])
   );
 
-  console.log('📌 Nutrition Goals Before Sending to OpenAI:');
-  console.log(`   🔹 Daily Calories: ${healthMetrics.dailySurplus} kcal`);
-  console.log(`   🔹 Daily Protein: ${healthMetrics.protein}g`);
-  console.log(`   🔹 Daily Fat: ${healthMetrics.fat}g`);
-  console.log(`   🔹 Daily Carbohydrates: ${healthMetrics.carbs}g`);
+  // console.log('Nutrition Goals Before Sending to OpenAI:');
+  // console.log(`   Daily Calories: ${healthMetrics.dailySurplus} kcal`);
+  // console.log(`   Daily Protein: ${healthMetrics.protein}g`);
+  // console.log(`   Daily Fat: ${healthMetrics.fat}g`);
+  // console.log(`   Daily Carbohydrates: ${healthMetrics.carbs}g`);
 
-  console.log('📌 Allowed Ingredients Per Day (Sent to OpenAI):');
-  console.log(JSON.stringify(updatedDays, null, 2));
+  // console.log('Allowed Ingredients Per Day (Sent to OpenAI):');
+  // console.log(JSON.stringify(updatedDays, null, 2));
 
-  console.log(`🤖 Sending prompt to OpenAI...`);
+  // console.log(`Sending prompt to OpenAI...`);
   const prompt = `
-  You are a highly skilled **nutritionist chef** specializing in scientific meal planning.  
-  Your task is to **generate a precise meal plan** for **Week ${currentWeek}**, covering **exactly 7 days (Monday to Sunday)**.  
-  
-  ---
-  ## **STRICT INSTRUCTIONS (DO NOT BREAK THESE RULES)**
-  1 **MUST create a meal plan for ALL 7 DAYS (Monday to Sunday).**  
-  2 **Each day MUST have exactly 3 meals:** Breakfast, Lunch, and Dinner.  
-  3 **STRICTLY use ONLY the provided ingredients for each specific day.**  
-    - **DO NOT use ingredients that are not listed here.**  
-    - **If any ingredient is missing, the response will be REJECTED.**  
-  4 **Follow these exact nutritional guidelines (MANDATORY - DO NOT IGNORE):**  
-    - **Daily Calories (ABSOLUTE REQUIREMENT):** ${
-      healthMetrics.dailySurplus
-    } kcal (MUST reach this value)  
-    - **Daily Protein:** ${healthMetrics.protein}g  
-    - **Daily Fat:** ${healthMetrics.fat}g  
-    - **Daily Carbohydrates:** ${healthMetrics.carbs}g  
-    - **Nutritional values MUST be calculated based on the actual nutritional values of each ingredient.**  
-    - **Adjust ingredient portions to ensure that daily calories and macros meet the targets.**  
-    - **Each meal should contribute proportionally to the total daily intake (e.g., ~33% per meal).**  
-    - **DO NOT create meals that are too low in calories. If necessary, increase portion sizes.**  
-    - **Recalculate nutrition values after adjusting portions to ensure accuracy.**  
-  5 **If you fail to meet all 4 requirements above, regenerate the entire response.**  
-  
-  ---
-  ## **Allowed Ingredients**
-  **Here is the list of approved ingredients for each day.**  
-  **STRICTLY use only the ingredients listed under each day.**  
-  
-  \`\`\`json
-  ${JSON.stringify(updatedDays, null, 2)}
-  \`\`\`
-  
-  ---
-  ## **Response Format (DO NOT CHANGE THIS FORMAT)**
-  **The response MUST be a valid JSON object with exactly 7 days and 3 meals per day.**  
-  \`\`\`json
-  {
-    "mealPlan": [
-      {
-        "week": ${currentWeek},
-        "day": "<Monday-Sunday>",
-        "meal": "<Breakfast/Lunch/Dinner>",
-        "menu_name": "<Meal Name in Thai>",
-        "ingredients": [
-          { "id": "<Ingredient ID>", "name": "<Ingredient Name>", "amount": "<Amount in grams>" }
-        ],
-        "cooking_method": "<Cooking instructions in Thai>",
-        "calories": <number> kcal,
-        "protein": <number> g,
-        "fat": <number> g,
-        "carbohydrates": <number> g,
-        "reason": "<Reason for choosing this meal in Thai>"
-      }
-    ]
-  }
-  \`\`\`
-  
-  ---
-  ## **ABSOLUTE RESTRICTIONS (DO NOT VIOLATE)**
-    **DO NOT include any missing or unapproved ingredients.**  
-    **DO NOT skip any day or meal.**  
-    **DO NOT modify the JSON format.**  
-    **DO NOT return additional text or explanation. JSON ONLY.**  
-    **If the response does not strictly follow the rules, REGENERATE until it is correct.**  
+  คุณคือ **เชฟผู้เชี่ยวชาญด้านโภชนาการสำหรับคนออกกำลังกายเพื่อสร้างกล้ามเนื้อ** ที่มีความชำนาญในการวางแผนเมนูอาหารทางวิทยาศาสตร์  
+หน้าที่ของคุณคือ **สร้างแผนมื้ออาหารที่ยืนอยู่บนความเป็นจริงสามารถรับประทานได้จริง** สำหรับ **สัปดาห์ที่ ${currentWeek}** ครอบคลุม **7 วัน (จันทร์ถึงอาทิตย์)**  
+
+---
+## **คำสั่งที่ต้องปฏิบัติตามอย่างเคร่งครัด (ห้ามละเมิดคำสั่งนี้)**
+1. **ต้องสร้างแผนมื้ออาหารสำหรับ 7 วัน (จันทร์ถึงอาทิตย์) เท่านั้น**  
+2. **แต่ละวันต้องมี 3 มื้ออาหาร:** มื้อเช้า, มื้อกลางวัน, มื้อเย็น  
+3. **ใช้เฉพาะวัตถุดิบที่ได้รับอนุมัติในแต่ละวัน**  
+   - **ห้ามใช้วัตถุดิบที่ไม่ได้ระบุไว้**  
+   - **หากขาดวัตถุดิบบางอย่าง การตอบจะถูกปฏิเสธ**  
+   - **สามารถใช้เครื่องปรุงได้ตามสบาย เครื่องปรุงไม่นับเป็นวัตถุดิบ เช่น น้ำปลา, ซีอิ๊วขาว, ซีอิ๊วดำ, น้ำตาลปี๊บ, น้ำตาลทราย, พริกไทย, เกลือ, น้ำมะนาว, ซอสพริก, ซอสมะเขือเทศ, ซอสหอยนางรม, น้ำพริกเผา, กระเทียม, หอมแดง, พริก**
+4. **ต้องปฏิบัติตามแนวทางโภชนาการนี้อย่างเคร่งครัด:**  
+   - **แคลอรี่ประจำวัน (ค่าที่ต้องการ):** ${
+     healthMetrics.dailySurplus
+   } kcal (ต้องถึงค่าที่ระบุ)  
+   - **โปรตีน:** ${healthMetrics.protein}g  
+   - **ไขมัน:** ${healthMetrics.fat}g  
+   - **คาร์โบไฮเดรต:** ${healthMetrics.carbs}g  
+   - **ต้องคำนวณค่าทางโภชนาการจากข้อมูลที่แท้จริงของแต่ละวัตถุดิบ**  
+   - **ปรับขนาดของส่วนผสมให้ตรงตามเป้าหมายแคลอรี่และสัดส่วนทางโภชนาการ**  
+   - **แต่ละมื้ออาหารต้องมีแคลอรี่ประมาณ 33% ของแคลอรี่ที่ต้องการในแต่ละวัน**  
+   - **ห้ามทำมื้ออาหารที่มีแคลอรี่ต่ำเกินไป** หากจำเป็นให้เพิ่มขนาดส่วนผสมให้เพียงพอ  
+   - **คำนวณค่าทางโภชนาการใหม่หลังจากการปรับขนาดส่วนผสม**  
+5. **หากไม่สามารถทำตามข้อกำหนดทั้งหมดได้ ให้สร้างคำตอบใหม่จนกว่าจะถูกต้อง**  
+
+*** รายชื่อตัวอย่างเมนู ***
+"
+  ข้าวไก่ย่างพริกไทยดำกับผักต้ม
+  ข้าวหน้าอกไก่ทอดกระเทียมพริกไทย
+  ข้าวหมูย่างซอสซีอิ๊ว
+  ไข่เจียวหมูสับกับข้าวกล้อง
+  สเต็กอกไก่กับมันฝรั่งอบ
+  ข้าวต้มหมูสับไข่เยี่ยวม้า
+  ข้าวผัดโปรตีนทูน่ากับผัก
+  ไข่ต้มกับผักสลัดและข้าวกล้อง
+  ข้าวมันไก่แซลมอนย่าง
+  ข้าวโพดคั่วกับอกไก่ย่าง
+  ข้าวคั่วหมูย่างกับน้ำพริกหนุ่ม
+  ข้าวแกงเขียวหวานไก่
+  ข้าวผัดกุ้งผักบุ้ง
+  ข้าวเหนียวหมูปิ้ง
+  แซลมอนย่างซอสซีอิ๊วกับผักย่าง
+  ไข่คนผัดผักรวมมิตร
+  ข้าวผัดหมูกรอบกับผัก
+  ผัดไทยหมูกรอบ
+  สเต็กเนื้อวัวกับข้าวโพดต้ม
+  ข้าวกะเพราหมูสับไข่ดาว
+  ซุปกระดูกหมูต้มยำ
+  ข้าวปลาทอดกระเทียมพริกไทย
+  ไก่ย่างสมุนไพรกับข้าวกล้อง
+  ข้าวซอยไก่
+  ข้าวผัดกุ้งกระเพรา
+  หมูย่างน้ำจิ้มซีฟู้ด
+  สเต็กหมูเนื้อนุ่มกับข้าวโพด
+  ข้าวผัดพริกสดไก่
+  ข้าวต้มปลาย่าง
+  ข้าวหมูกรอบกระเพรา
+"
+
+---
+## **วัตถุดิบที่อนุญาต**  
+**รายการวัตถุดิบที่อนุญาตสำหรับแต่ละวัน**  
+**ห้ามใช้วัตถุดิบที่ไม่ได้ระบุไว้**  
+
+\`\`\`json
+${JSON.stringify(updatedDays, null, 2)}
+\`\`\`
+
+---
+## **Response Format (DO NOT CHANGE THIS FORMAT)**
+**The response MUST be a valid JSON object with exactly 7 days and 3 meals per day.**  
+\\\json
+{
+  "mealPlan": [
+    {
+      "week": ${currentWeek},
+      "day": "<Monday-Sunday>",
+      "meal": "<Breakfast/Lunch/Dinner>",
+      "menu_name": "<ชื่อเมนูในภาษาไทย เช่น ข้าวไข่เจียว อกไก่ย่างพริกไทยดำ>",
+      "ingredients": [
+        { "id": "<Ingredient ID>", "name": "<Ingredient Name>", "amount": "<Amount in grams>" }
+      ],
+      "cooking_method": "<วิธีการทำอาหารโดยละเอียด>",
+      "calories": <number> kcal,
+      "protein": <number> g,
+      "fat": <number> g,
+      "carbohydrates": <number> g,
+      "reason": "<เหตุผลในการเลือกเมนูนี้ เช่น เมนูนี้ช่วยเสริมโปรตีนและไขมันดี ทำให้ร่างกายแข็งแรง>"
+    }
+  ]
+}
+\`\`\`
+
+---
+## **ABSOLUTE RESTRICTIONS (DO NOT VIOLATE)**
+   **DO NOT include any missing or unapproved ingredients.**  
+   **DO NOT skip any day or meal.**  
+   **DO NOT modify the JSON format.**  
+   **DO NOT return additional text or explanation. JSON ONLY.**  
+   **If the response does not strictly follow the rules, REGENERATE until it is correct.**  
+
   `;
 
   const completion = await openai.beta.chat.completions.parse({
@@ -198,11 +234,11 @@ export async function generateMealPlan(userId, days) {
 
   const mealPlan = completion.choices?.[0]?.message?.parsed;
   if (!mealPlan || !Array.isArray(mealPlan.mealPlan)) {
-    console.error(`❌ Invalid mealPlan data from OpenAI`);
+    console.error(`Invalid mealPlan data from OpenAI`);
     throw new Error('Invalid mealPlan data');
   }
 
-  console.log(`✅ Meal Plan successfully generated`);
+  console.log(`Meal Plan successfully generated`);
 
   await prisma.meals.createMany({
     data: mealPlan.mealPlan.map((meal) => ({
@@ -232,11 +268,11 @@ export async function generateMealPlan(userId, days) {
   ];
 
   if (expectedDays.some((day) => !daysSet.has(day))) {
-    console.error('❌ AI did not return all 7 days!');
-    throw new Error('❌ AI response is incomplete. Please try again.');
+    console.error('AI did not return all 7 days !!!!!');
+    throw new Error('AI response is incomplete. Please try again.');
   }
 
-  console.log(`✅ Meals saved to database`);
+  console.log(`Meals saved to database`);
 
   const createdMealsList = await prisma.meals.findMany({
     where: { UserId: userId, week: currentWeek },
@@ -257,7 +293,7 @@ export async function generateMealPlan(userId, days) {
 
   await prisma.meal_Ingredients.createMany({ data: mealIngredientsData });
 
-  console.log(`✅ Meal Ingredients saved to database`);
+  console.log(`Meal Ingredients saved to database`);
 
   return mealPlan.mealPlan;
 }

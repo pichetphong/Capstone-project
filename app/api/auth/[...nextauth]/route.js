@@ -1,8 +1,10 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { PrismaAdapter } from '@auth/prisma-adapter';
+import { redirect } from 'next/dist/server/api-utils';
 
 const prisma = new PrismaClient();
 
@@ -35,23 +37,43 @@ export const authOptions = {
         }
       },
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.given_name,
+          email: profile.email,
+        };
+      },
+    }),
   ],
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: 'jwt',
   },
   callbacks: {
-    jwt: async ({ token, user }) => {
+    jwt: async ({ token, user, account }) => {
       if (user) {
         token.id = user.id;
       }
+
+      if (account) {
+        token.provider = account.provider;
+      }
+
       return token;
     },
     session: async ({ session, token }) => {
       if (session.user) {
         session.user.id = token.id;
+        session.user.provider = token.provider;
       }
       return session;
+    },
+    async redirect({ baseUrl }) {
+      return `${baseUrl}/profile`;
     },
   },
 };

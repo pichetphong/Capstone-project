@@ -13,7 +13,6 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -23,12 +22,11 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 import { Button } from '../ui/button';
-import { Eye, EyeOff } from 'lucide-react';
+import { FaSpinner } from 'react-icons/fa';
 
 export default function TableProfile() {
   const { data: session, status, update } = useSession();
 
-  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -38,13 +36,15 @@ export default function TableProfile() {
 
   const userId = session?.user?.id;
 
+  const isGoogleLogin = session?.user?.provider === 'google';
+
   useEffect(() => {
     if (!userId) return;
 
     const fetchData = async () => {
       try {
         const res = await fetch(`http://localhost:3000/api/user/${userId}`);
-        if (!res.ok) throw new Error('Failed to fetch user data');
+        if (!res.ok) throw new Error('ไม่พบบันชีผู้ใช้');
 
         const json = await res.json();
 
@@ -61,7 +61,7 @@ export default function TableProfile() {
 
   const handleUpdate = async () => {
     if (!userId) {
-      setMessage('User ID not found');
+      setMessage('ไม่พบไอดีผู้ใช้');
       return;
     }
 
@@ -75,7 +75,7 @@ export default function TableProfile() {
         body: JSON.stringify({ name, email }),
       });
 
-      if (!res.ok) throw new Error('Failed to update user data');
+      if (!res.ok) throw new Error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
 
       await update();
     } catch (error) {
@@ -85,16 +85,15 @@ export default function TableProfile() {
     }
   };
 
-  if (status === 'loading' || loading) return <p>Loading...</p>;
-  if (!userId) return <p className="text-red-500">User ID not found</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
+  if (status === 'loading' || loading)
+    return <FaSpinner className="animate-spin text-4xl" />;
 
   const user = data;
-  if (!user || !user.id) return <p>No user Found.</p>;
+  if (!user || !user.id) return <p>ไม่พบผู้ใช้</p>;
 
   const details = [
-    { label: 'Email', key: 'email' },
-    { label: 'Name', key: 'name' },
+    { label: 'อีเมลล์', key: 'email' },
+    { label: 'ชื่อ', key: 'name' },
   ];
 
   return (
@@ -116,32 +115,32 @@ export default function TableProfile() {
               <TableRow className="hover:bg-transparent">
                 <TableCell>
                   <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="">Edit Profile</Button>
-                    </DialogTrigger>
+                    {!isGoogleLogin && (
+                      <DialogTrigger asChild>
+                        <Button disabled={isGoogleLogin}>
+                          แก้ไขข้อมูลส่วนตัว
+                        </Button>
+                      </DialogTrigger>
+                    )}
 
                     <DialogContent className="max-w-lg">
-                      <DialogTitle>Edit Profile</DialogTitle>
+                      <DialogTitle>แก้ไขข้อมูลส่วนตัว</DialogTitle>
                       <DialogDescription>
-                        Adjust your Profile.
+                        ปรับแต่งข้อมูลส่วนตัวของคุณที่นี่
                       </DialogDescription>
                       <Tabs defaultValue="account" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="account">Account</TabsTrigger>
-                          <TabsTrigger value="password">Password</TabsTrigger>
+                          <TabsTrigger value="account">บัญชี</TabsTrigger>
+                          <TabsTrigger value="password">รหัสผ่าน</TabsTrigger>
                         </TabsList>
                         <TabsContent value="account">
                           <Card>
                             <CardHeader>
-                              <CardTitle>Account</CardTitle>
-                              <CardDescription>
-                                Make changes to your account here. Click save
-                                when you're done.
-                              </CardDescription>
+                              <CardTitle>บัญชี</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
                               <div className="space-y-1">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">ชื่อ</Label>
                                 <Input
                                   id="name"
                                   value={name}
@@ -149,7 +148,7 @@ export default function TableProfile() {
                                 />
                               </div>
                               <div className="space-y-1">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">อีเมลล์</Label>
                                 <Input
                                   id="email"
                                   value={email}
@@ -159,7 +158,7 @@ export default function TableProfile() {
                             </CardContent>
                             <CardFooter>
                               <Button onClick={handleUpdate} disabled={loading}>
-                                {loading ? 'Updating...' : 'Save changes'}
+                                {loading ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่าน'}
                               </Button>
                             </CardFooter>
                           </Card>
@@ -167,26 +166,22 @@ export default function TableProfile() {
                         <TabsContent value="password">
                           <Card>
                             <CardHeader>
-                              <CardTitle>Password</CardTitle>
-                              <CardDescription>
-                                Change your password here. After saving, you'll
-                                be logged out.
-                              </CardDescription>
+                              <CardTitle>รหัสผ่าน</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
                               <div className="space-y-1">
                                 <Label htmlFor="current">
-                                  Current password
+                                  รหัสผ่านปัจจุบัน
                                 </Label>
                                 <Input id="current" type="password" />
                               </div>
                               <div className="space-y-1">
-                                <Label htmlFor="new">New password</Label>
+                                <Label htmlFor="new">รหัสผ่านใหม่</Label>
                                 <Input id="new" type="password" />
                               </div>
                             </CardContent>
                             <CardFooter>
-                              <Button>Save password</Button>
+                              <Button>บันทึกรหัสผ่าน</Button>
                             </CardFooter>
                           </Card>
                         </TabsContent>

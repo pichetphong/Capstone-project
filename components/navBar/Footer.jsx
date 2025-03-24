@@ -12,10 +12,10 @@ export default function Footer() {
 
         {/* Navigation Links */}
         <nav className="flex flex-wrap justify-center md:justify-end gap-4 md:gap-6 text-sm mt-4 md:mt-0">
-          <Button variant="link2">About</Button>
-          <Button variant="link2">Services</Button>
-          <Button variant="link2">Contact</Button>
-          <Button variant="link2">Privacy Policy</Button>
+          <Button variant="link2">เกี่ยวกับเรา</Button>
+          <Button variant="link2">บริการ</Button>
+          <Button variant="link2">ช่องทางการติดต่อ</Button>
+          <Button variant="link2">นโยบายบริษัท</Button>
         </nav>
       </div>
 

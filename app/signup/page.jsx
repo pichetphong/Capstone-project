@@ -4,6 +4,9 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+import { signIn } from 'next-auth/react';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
@@ -12,10 +15,10 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
+  const router = useRouter();
+
   const handleSumit = async (e) => {
     e.preventDefault();
-
-    console.log('Form Submitted:', { name, email, password, confirmPassword });
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -26,16 +29,32 @@ export default function SignupPage() {
       setError('All fields are required');
       return;
     }
+
+    try {
+      const res = await fetch('http://localhost:3000/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      if (!res.ok) throw new Error('Failed to create account');
+
+      await res.json();
+
+      router.push('/signin');
+    } catch (error) {
+      setError(error.message);
+    }
   };
 
   return (
     <div className="flex items-center justify-center my-10 ">
-      <div className="w-full max-w-md p-8 bg-maroon rounded-lg shadow-md">
+      <div className="w-full max-w-md p-8  rounded-lg shadow-xl">
         <div className="flex flex-col items-center">
           <Link href="/">
             <img src="/images/logo.png" alt="Logo" className="w-16 h-16 mb-4" />
           </Link>
-          <h1 className="text-3xl font-bold text-white mb-6">Create account</h1>
+          <h1 className="text-3xl font-bold  mb-6">Create account</h1>
         </div>
         <form className="space-y-4" onSubmit={handleSumit}>
           {error && (
@@ -47,42 +66,43 @@ export default function SignupPage() {
             onChange={(e) => setName(e.target.value)}
             type="name"
             placeholder="name"
-            className="w-full px-4 py-2 border rounded-lg text-white "
+            className="w-full px-4 py-2 border rounded-lg  "
           />
           <Input
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="email address"
-            className="w-full px-4 py-2 border rounded-lg text-white "
+            className="w-full px-4 py-2 border rounded-lg  "
           />
           <Input
             onChange={(e) => setPassword(e.target.value)}
             type="password"
             placeholder="password"
-            className="w-full px-4 py-2 border rounded-lg text-white "
+            className="w-full px-4 py-2 border rounded-lg  "
           />
           <Input
             onChange={(e) => setConfirmPassword(e.target.value)}
             type="password"
             placeholder="confirm password"
-            className="w-full px-4 py-2 border rounded-lg text-white "
+            className="w-full px-4 py-2 border rounded-lg  "
           />
           <Button
             type="submit"
             variant="outlin3"
-            className="w-full px-4 py-2 text-black "
+            className="w-full px-4 py-2  "
           >
             create account
           </Button>
         </form>
         <div className="flex items-center justify-center my-4">
-          <span className="text-black text-sm">or sign up with</span>
+          <span className=" text-sm">or sign up with</span>
         </div>
         <div className="flex items-center justify-center">
           <Button
-            type="submit"
+            type="button"
+            onClick={() => signIn('google')}
             variant="outlin3"
-            className="flex items-center px-4 py-2 border rounded-lg text-black "
+            className="flex items-center px-4 py-2 border rounded-lg  "
           >
             <img
               src="/icons8-google.svg"
@@ -92,21 +112,21 @@ export default function SignupPage() {
             Google
           </Button>
         </div>
-        <p className="mt-6 text-xs text-center text-black">
+        <p className="mt-6 text-xs text-center ">
           By creating an account you agree to My app <br />
-          <a href="#" className="text-white hover:underline">
+          <a href="#" className=" hover:underline text-maroon">
             Term of Services
           </a>{' '}
           and{' '}
-          <a href="#" className="text-white hover:underline">
+          <a href="#" className=" hover:underline text-maroon">
             Privacy Policy
           </a>
         </p>
-        <p className="mt-4 text-xs text-center text-black">
+        <p className="mt-4 text-xs text-center ">
           Have an account?{' '}
           <Link
             href="/signin"
-            className="text-white font-medium hover:underline"
+            className=" font-medium hover:underline text-maroon"
           >
             Log in
           </Link>

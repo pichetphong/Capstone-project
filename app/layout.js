@@ -27,17 +27,15 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
-      >
+      <body className={`font-all antialiased flex flex-col min-h-screen`}>
         <Provider>
-          <Header />
+          <SessionProvider session={session}>
+            <Header />
 
-          <main className="flex-grow">
-            <SessionProvider session={session}>{children}</SessionProvider>
-          </main>
+            <main className="flex-grow">{children}</main>
 
-          <Footer />
+            <Footer />
+          </SessionProvider>
         </Provider>
       </body>
     </html>
