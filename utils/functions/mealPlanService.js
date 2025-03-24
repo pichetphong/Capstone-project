@@ -105,16 +105,16 @@ export async function generateMealPlan(userId, days) {
     ])
   );
 
-  console.log('Nutrition Goals Before Sending to OpenAI:');
-  console.log(`   Daily Calories: ${healthMetrics.dailySurplus} kcal`);
-  console.log(`   Daily Protein: ${healthMetrics.protein}g`);
-  console.log(`   Daily Fat: ${healthMetrics.fat}g`);
-  console.log(`   Daily Carbohydrates: ${healthMetrics.carbs}g`);
+  // console.log('Nutrition Goals Before Sending to OpenAI:');
+  // console.log(`   Daily Calories: ${healthMetrics.dailySurplus} kcal`);
+  // console.log(`   Daily Protein: ${healthMetrics.protein}g`);
+  // console.log(`   Daily Fat: ${healthMetrics.fat}g`);
+  // console.log(`   Daily Carbohydrates: ${healthMetrics.carbs}g`);
 
-  console.log('Allowed Ingredients Per Day (Sent to OpenAI):');
-  console.log(JSON.stringify(updatedDays, null, 2));
+  // console.log('Allowed Ingredients Per Day (Sent to OpenAI):');
+  // console.log(JSON.stringify(updatedDays, null, 2));
 
-  console.log(`🤖 Sending prompt to OpenAI...`);
+  // console.log(`Sending prompt to OpenAI...`);
   const prompt = `
   คุณคือ **เชฟผู้เชี่ยวชาญด้านโภชนาการสำหรับคนออกกำลังกายเพื่อสร้างกล้ามเนื้อ** ที่มีความชำนาญในการวางแผนเมนูอาหารทางวิทยาศาสตร์  
 หน้าที่ของคุณคือ **สร้างแผนมื้ออาหารที่ยืนอยู่บนความเป็นจริงสามารถรับประทานได้จริง** สำหรับ **สัปดาห์ที่ ${currentWeek}** ครอบคลุม **7 วัน (จันทร์ถึงอาทิตย์)**  

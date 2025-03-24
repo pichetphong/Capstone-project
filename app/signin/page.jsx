@@ -84,7 +84,8 @@ export default function SigninPage() {
         </div>
         <div className="flex items-center justify-center">
           <Button
-            type="submit"
+            type="button"
+            onClick={() => signIn('google')}
             variant="outlin3"
             className="flex items-center px-4 py-2 border rounded-lg  "
           >

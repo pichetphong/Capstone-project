@@ -14,16 +14,39 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String?
-  email     String   @unique
-  password  String
+  id       String  @id @default(uuid())
+  name     String?
+  email    String  @unique
+  password String?
+
+  emailVerified DateTime?
+  accounts      Account[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // One-to-many relationship with HealthMetrics
   healthMetrics HealthMetrics[]
   Meals         Meals[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
 model HealthMetrics {
@@ -54,28 +77,28 @@ model HealthMetrics {
 }
 
 enum Gender {
-  FEMALE // 0
-  MALE // 1
+  FEMALE // ผู้หญิง
+  MALE // ผู้ชาย
 }
 
 enum Goal {
-  LOSE_WEIGHT // -1
-  MAINTAIN // 0
-  GAIN_WEIGHT // 1
+  LOSE_WEIGHT // ลดน้ำหนัก
+  MAINTAIN // คงน้ำหนัก
+  GAIN_WEIGHT // เพิ่มน้ำหนัก
 }
 
 enum DietType {
-  LOW_CARB // -1
-  BALANCED // 0
-  HIGH_PROTEIN // 1
+  LOW_CARB // แป้งต่ำ
+  BALANCED // สมมาตร
+  HIGH_PROTEIN // โปรตีนสูง
 }
 
 enum ActivityLevel {
-  SEDENTARY // 0 (1.2)
-  LIGHTLY_ACTIVE // 1 (1.375)
-  MODERATELY_ACTIVE // 2 (1.55)
-  VERY_ACTIVE // 3 (1.725)
-  SUPER_ACTIVE // 4 (1.9)
+  SEDENTARY // ไม่ออกกำลังกาย 
+  LIGHTLY_ACTIVE // สัปดาห์ละประมาณ 1-3 วัน
+  MODERATELY_ACTIVE // สัปดาห์ละประมาณ 3-5 วัน
+  VERY_ACTIVE // สัปดาห์ละประมาณ 6-7 วัน
+  SUPER_ACTIVE // ทุกวันเช้าและเย็น
 }
 
 model Ingredients {

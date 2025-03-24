@@ -47,10 +47,10 @@ export default function PlanMeals() {
     }
   }, [status, session]);
 
-  const addItemToDay = (item) => {
+  const addItemToDay = (items) => {
     setMealPlans((prev) => ({
       ...prev,
-      [selectedDay]: [...prev[selectedDay], item],
+      [selectedDay]: [...prev[selectedDay], ...items], // เพิ่มหลายรายการพร้อมกัน
     }));
   };
 
@@ -134,39 +134,41 @@ export default function PlanMeals() {
           </div>
 
           {mealPlans[selectedDay].length > 0 && (
-            <div className="bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 mt-5 rounded-xl">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ชื่อวัตถุดิบ</TableHead>
-                    <TableHead>แคลอรี่</TableHead>
-                    <TableHead>โปรตีน</TableHead>
-                    <TableHead>ไขมัน</TableHead>
-                    <TableHead>คาร์โบ</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mealPlans[selectedDay].map((item, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell>{item.calories}</TableCell>
-                      <TableCell>{item.protein}</TableCell>
-                      <TableCell>{item.fat}</TableCell>
-                      <TableCell>{item.carbohydrates}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          onClick={() => removeItemFromDay(index)}
-                          className="p-2"
-                        >
-                          <Trash2 size={16} />{' '}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className=" mx-auto mb-5 p-5 mt-5 rounded-xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+                {mealPlans[selectedDay].map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col items-center  p-4 rounded-lg shadow-md"
+                  >
+                    <img
+                      src={`/images/ingredients/${item.image}`}
+                      alt={item.name}
+                      className="w-[300px] h-[200px] object-cover rounded-lg shadow-md"
+                    />
+                    <div className="mt-2 text-2xl font-semibold">
+                      {item.name}
+                    </div>
+                    <div className="font-medium ">
+                      🔥 แคลอรี่: {item.calories}
+                    </div>
+                    <div className="font-medium ">
+                      💪 โปรตีน: {item.protein}
+                    </div>
+                    <div className="font-medium ">🥑 ไขมัน: {item.fat}</div>
+                    <div className="font-medium ">
+                      🍞 คาร์โบ: {item.carbohydrates}
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={() => removeItemFromDay(index)}
+                      className="mt-2 p-2"
+                    >
+                      <Trash2 size={16} /> ลบ
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           <div className="mt-5">

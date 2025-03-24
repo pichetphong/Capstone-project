@@ -56,6 +56,85 @@ export default function TableResult() {
     fetchData();
   }, [userId]);
 
+  const dateOptions = healthMetricsList
+    .map((metric) => ({
+      id: metric.id,
+      date: new Date(metric.createdAt).toISOString().split('T')[0],
+    }))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  useEffect(() => {
+    if (dateOptions.length > 0 && !selectedDate) {
+      setSelectedDate(dateOptions[0].id);
+    }
+  }, [dateOptions]);
+
+  const selectedMetrics =
+    healthMetricsList.find((metric) => metric.id === selectedDate) ||
+    healthMetricsList[0];
+
+  const latestHealthMetrics = data?.healthMetrics?.length
+    ? data.healthMetrics.reduce((latest, current) =>
+        new Date(current.createdAt) > new Date(latest.createdAt)
+          ? current
+          : latest
+      )
+    : null;
+
+  useEffect(() => {
+    if (latestHealthMetrics) {
+      setGender(latestHealthMetrics.gender);
+    }
+  }, [latestHealthMetrics]);
+
+  if (status === 'loading' || loading)
+    return <FaSpinner className=" animate-spin text-4xl" />;
+
+  const metrics = [
+    { label: 'อายุ', key: 'age' },
+    { label: 'น้ำหนัก', key: 'weight' },
+    { label: 'ส่วนสูง', key: 'height' },
+    { label: 'เพศ', key: 'gender' },
+    { label: 'เป้าหมายที่ต้องการ', key: 'goal' },
+    { label: 'วิธีรับประทาน', key: 'dietType' },
+    { label: 'ระดับการออกกำลังกาย', key: 'activityLevel' },
+  ];
+
+  const metricsR = [
+    { label: 'แคลอรี่ที่ควรได้รับต่อวัน', key: 'dailySurplus' },
+    { label: 'เปอร์เซ็นต์ไขมัน', key: 'bodyFat' },
+    { label: 'มวลไขมัน', key: 'fatMass' },
+    { label: 'มวลกล้ามเนื้อ', key: 'leanMass' },
+    { label: 'BMI', key: 'bmi' },
+    { label: 'BMR', key: 'bmr' },
+    { label: 'TDEE', key: 'tdee' },
+  ];
+
+  const genderMapping = {
+    FEMALE: 'ผู้หญิง',
+    MALE: 'ผู้ชาย',
+  };
+
+  const goalMapping = {
+    LOSE_WEIGHT: 'ลดน้ำหนัก',
+    MAINTAIN: 'คงน้ำหนัก',
+    GAIN_WEIGHT: 'เพิ่มน้ำหนัก',
+  };
+
+  const dietTypeMapping = {
+    LOW_CARB: 'แป้งต่ำ',
+    BALANCED: 'สมมาตร',
+    HIGH_PROTEIN: 'โปรตีนสูง',
+  };
+
+  const activityLevelMapping = {
+    SEDENTARY: 'ไม่ออกกำลังกาย',
+    LIGHTLY_ACTIVE: 'สัปดาห์ละประมาณ 1-3 วัน',
+    MODERATELY_ACTIVE: 'สัปดาห์ละประมาณ 3-5 วัน',
+    VERY_ACTIVE: 'สัปดาห์ละประมาณ 6-7 วัน',
+    SUPER_ACTIVE: 'ทุกวันเช้าและเย็น',
+  };
+
   const handleUpdate = async () => {
     setLoading(true);
     setMessage('');
@@ -88,71 +167,13 @@ export default function TableResult() {
 
       if (!res.ok) throw new Error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
 
-      const data = await res.json();
       window.location.reload();
-      setMessage('บันทึกข้อมูลเรียบร้อย');
     } catch (error) {
       setMessage(error.message);
     } finally {
       setLoading(false);
     }
   };
-
-  // จัดเรียงวันที่ Health Metrics ล่าสุดขึ้นก่อน
-  const dateOptions = healthMetricsList
-    .map((metric) => ({
-      id: metric.id,
-      date: new Date(metric.createdAt).toISOString().split('T')[0],
-    }))
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  // ตั้งค่า Default เป็นข้อมูลล่าสุด
-  useEffect(() => {
-    if (dateOptions.length > 0 && !selectedDate) {
-      setSelectedDate(dateOptions[0].id);
-    }
-  }, [dateOptions]);
-
-  // หา Health Metrics ตามวันที่ที่เลือก
-  const selectedMetrics =
-    healthMetricsList.find((metric) => metric.id === selectedDate) ||
-    healthMetricsList[0]; // ให้ default เป็นค่าล่าสุด
-
-  const latestHealthMetrics = data?.healthMetrics?.length
-    ? data.healthMetrics.reduce((latest, current) =>
-        new Date(current.createdAt) > new Date(latest.createdAt)
-          ? current
-          : latest
-      )
-    : null;
-
-  useEffect(() => {
-    if (latestHealthMetrics) {
-      setGender(latestHealthMetrics.gender); // ตั้งค่า gender จากข้อมูลล่าสุด
-    }
-  }, [latestHealthMetrics]);
-
-  if (status === 'loading' || loading)
-    return <FaSpinner className=" animate-spin text-4xl" />;
-
-  const metrics = [
-    { label: 'อายุ', key: 'age' },
-    { label: 'น้ำหนัก', key: 'weight' },
-    { label: 'ส่วนสูง', key: 'height' },
-    { label: 'เพศ', key: 'gender' },
-    { label: 'เป้าหมายการออกกำลังกาย', key: 'goal' },
-    { label: 'วิธีรับประทาน', key: 'dietType' },
-    { label: 'ระดับการออกกำลังกาย', key: 'activityLevel' },
-  ];
-
-  const metricsR = [
-    { label: 'เปอร์เซ็นต์ไขมัน', key: 'bodyFat' },
-    { label: 'มวลไขมัน', key: 'fatMass' },
-    { label: 'มวลกล้ามเนื้อ', key: 'leanMass' },
-    { label: 'BMI', key: 'bmi' },
-    { label: 'BMR', key: 'bmr' },
-    { label: 'TDEE', key: 'tdee' },
-  ];
 
   if (!latestHealthMetrics)
     return (
@@ -164,7 +185,7 @@ export default function TableResult() {
           <DialogContent className="max-w-lg">
             <DialogTitle>บันทึกข้อมูลสุขภาพ</DialogTitle>
             <DialogDescription>
-              ปรับแต่งเป้าหมายการออกกำลังกายและการบริโภคอาหารของคุณ
+              ปรับแต่งเป้าหมายที่ต้องการและการบริโภคอาหารของคุณ
             </DialogDescription>
             <Card>
               <CardContent className="space-y-2">
@@ -211,7 +232,7 @@ export default function TableResult() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="goal">เป้าหมายการออกกำลังกาย</Label>
+                  <Label htmlFor="goal">เป้าหมายที่ต้องการ</Label>
                   <select
                     id="goal"
                     value={goal}
@@ -219,7 +240,7 @@ export default function TableResult() {
                     className="border rounded-md p-2 w-full"
                   >
                     <option value="" disabled>
-                      เลือกเป้าหมายการออกกำลังกาย
+                      เลือกเป้าหมายที่ต้องการ
                     </option>
                     <option value="LOSE_WEIGHT">ลดน้ำหนัก</option>
                     <option value="MAINTAIN">คงน้ำหนัก</option>
@@ -302,12 +323,23 @@ export default function TableResult() {
               <TableBody>
                 {metrics.map(({ label, key }) => (
                   <TableRow key={key}>
-                    <TableCell className="w-[100px] font-semibold">
+                    <TableCell className="w-[175px] font-semibold">
                       {label}
                     </TableCell>
                     <TableCell className="w-[50px]">:</TableCell>
                     <TableCell className="min-w-[100px]">
-                      {selectedMetrics[key]}
+                      {key === 'gender' && genderMapping[selectedMetrics[key]]}
+                      {key === 'goal' && goalMapping[selectedMetrics[key]]}
+                      {key === 'dietType' &&
+                        dietTypeMapping[selectedMetrics[key]]}
+                      {key === 'activityLevel' &&
+                        activityLevelMapping[selectedMetrics[key]]}
+                      {![
+                        'gender',
+                        'goal',
+                        'dietType',
+                        'activityLevel',
+                      ].includes(key) && selectedMetrics[key]}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -321,7 +353,7 @@ export default function TableResult() {
                       <DialogContent className="max-w-lg">
                         <DialogTitle>บันทึกข้อมูลสุขภาพ</DialogTitle>
                         <DialogDescription>
-                          ปรับแต่งเป้าหมายการออกกำลังกายและการบริโภคอาหารของคุณ
+                          ปรับแต่งเป้าหมายที่ต้องการและการบริโภคอาหารของคุณ
                         </DialogDescription>
                         <Card>
                           <CardContent className="space-y-2">
@@ -368,9 +400,7 @@ export default function TableResult() {
                               </select>
                             </div>
                             <div className="space-y-1">
-                              <Label htmlFor="goal">
-                                เป้าหมายการออกกำลังกาย
-                              </Label>
+                              <Label htmlFor="goal">เป้าหมายที่ต้องการ</Label>
                               <select
                                 id="goal"
                                 value={goal}
@@ -378,7 +408,7 @@ export default function TableResult() {
                                 className="border rounded-md p-2 w-full"
                               >
                                 <option value="" disabled>
-                                  เลือกเป้าหมายการออกกำลังกาย
+                                  เลือกเป้าหมายที่ต้องการ
                                 </option>
                                 <option value="LOSE_WEIGHT">ลดน้ำหนัก</option>
                                 <option value="MAINTAIN">คงน้ำหนัก</option>
@@ -469,7 +499,7 @@ export default function TableResult() {
               <TableBody>
                 {metricsR.map(({ label, key }) => (
                   <TableRow key={key}>
-                    <TableCell className="w-[100px] font-semibold">
+                    <TableCell className="w-[175px] font-semibold">
                       {label}
                     </TableCell>
                     <TableCell className="w-[50px]">:</TableCell>

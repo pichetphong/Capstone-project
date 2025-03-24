@@ -36,6 +36,8 @@ export default function TableProfile() {
 
   const userId = session?.user?.id;
 
+  const isGoogleLogin = session?.user?.provider === 'google';
+
   useEffect(() => {
     if (!userId) return;
 
@@ -113,9 +115,13 @@ export default function TableProfile() {
               <TableRow className="hover:bg-transparent">
                 <TableCell>
                   <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="">แก้ไขข้อมูลส่วนตัว</Button>
-                    </DialogTrigger>
+                    {!isGoogleLogin && (
+                      <DialogTrigger asChild>
+                        <Button disabled={isGoogleLogin}>
+                          แก้ไขข้อมูลส่วนตัว
+                        </Button>
+                      </DialogTrigger>
+                    )}
 
                     <DialogContent className="max-w-lg">
                       <DialogTitle>แก้ไขข้อมูลส่วนตัว</DialogTitle>

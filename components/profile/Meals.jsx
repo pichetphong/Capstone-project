@@ -94,17 +94,15 @@ export default function Meals() {
                       <div className="p-1">
                         <Card className="h-[auto] rounded-2xl shadow-lg">
                           <CardContent className="flex flex-col items-center justify-center p-6 space-y-2">
-                            <span className="text-2xl font-bold">
+                            <div className="text-2xl font-bold">
                               {meal.meal}
-                            </span>
-                            <span className="text-xl font-semibold">
+                            </div>
+                            <div className="text-xl font-semibold">
                               {meal.name}
-                            </span>
+                            </div>
 
                             <div className="grid grid-cols-2 gap-2 text-lg">
-                              <span className="font-medium">
-                                🥘 Ingredients:
-                              </span>
+                              <div className="font-medium">🥘 Ingredients:</div>
                               <ul>
                                 {meal.Meal_Ingredients.map((mealIngredient) => (
                                   <li key={mealIngredient.id}>
@@ -113,24 +111,24 @@ export default function Meals() {
                                   </li>
                                 ))}
                               </ul>
-                              <span className="font-medium ">🔥 Calories:</span>
-                              <span className="">{meal.calories}</span>
+                              <div className="font-medium ">🔥 Calories:</div>
+                              <div className="">{meal.calories}</div>
 
-                              <span className="font-medium ">💪 Protein:</span>
-                              <span className="">{meal.protein}g</span>
+                              <div className="font-medium ">💪 Protein:</div>
+                              <div className="">{meal.protein}g</div>
 
-                              <span className="font-medium ">🥑 Fat:</span>
-                              <span className="">{meal.fat}g</span>
+                              <div className="font-medium ">🥑 Fat:</div>
+                              <div className="">{meal.fat}g</div>
 
-                              <span className="font-medium ">🍞 Carbs:</span>
-                              <span className="">{meal.carbohydrates}g</span>
+                              <div className="font-medium ">🍞 Carbs:</div>
+                              <div className="">{meal.carbohydrates}g</div>
                             </div>
-                            <span className="text-sm italic ">
+                            <div className="text-sm italic ">
                               🔪 Cooking: {meal.cooking_method}
-                            </span>
-                            <span className="text-sm italic ">
+                            </div>
+                            <div className="text-sm italic ">
                               💡 Reason: {meal.reason}
-                            </span>
+                            </div>
                           </CardContent>
                         </Card>
                       </div>

@@ -47,7 +47,6 @@ export async function POST(req) {
     //   dietType,
     // });
 
-    // เรียกใช้ Calculation
     const result = Calculation({
       weight,
       height,
