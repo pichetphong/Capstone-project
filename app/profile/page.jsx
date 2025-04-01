@@ -3,6 +3,7 @@
 import TableProfile from '../../components/profile/TableProfile';
 import TableResult from '../../components/profile/TableResult';
 import Meals from '../../components/profile/Meals';
+import ProfileChart from '../../components/profile/ProfileChart';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -31,26 +32,29 @@ export default function profile() {
         <section className="container mx-auto my-5 px-6 py-5  rounded-2xl">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <h1 className="text-2xl md:text-6xl font-bold mb-4 ">
-                ข้อมูลส่วนตัว
-              </h1>
-              <TableProfile />
+              <div>
+                <h1 className="text-2xl md:text-6xl font-bold mb-4 ">
+                  ข้อมูลส่วนตัว
+                </h1>
+                <TableProfile />
+              </div>
+              <div>
+                <TableResult />
+              </div>
             </div>
             <div>
-              <h1 className="text-2xl md:text-6xl font-bold mb-4 ">
-                ข้อมูลสุขภาพ
-              </h1>
-              <TableResult />
+              <h1 className="text-2xl md:text-6xl font-bold mb-4 ">กราฟ</h1>
+              <ProfileChart />
             </div>
           </div>
-          <div className="">
+          {/* <div className="">
             <Link href="/planmeals">
               <h1 className="text-2xl md:text-6xl font-bold mb-4 ">
                 เมนูอาหาร
               </h1>
             </Link>
             <Meals />
-          </div>
+          </div> */}
         </section>
       </>
     )

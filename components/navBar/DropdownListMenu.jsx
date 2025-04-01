@@ -20,6 +20,7 @@ const DropdownListMenu = () => {
     { href: '/', label: 'หน้าหลัก' },
     { href: '/profile', label: 'ข้อมูลส่วนตัว' },
     { href: '/planmeals', label: 'สร้างแพลน' },
+    { href: '/meals', label: 'มื้ออาหาร' },
   ];
 
   return (

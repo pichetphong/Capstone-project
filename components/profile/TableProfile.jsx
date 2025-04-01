@@ -100,7 +100,7 @@ export default function TableProfile() {
     status === 'authenticated' &&
     session.user && (
       <>
-        <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl  ">
+        <div className="container text-black bg-white shadow-md rounded-lg p-4  mx-auto mb-5   ">
           <Table>
             <TableBody>
               {details.map(({ label, key }) => (

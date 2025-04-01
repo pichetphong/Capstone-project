@@ -59,9 +59,10 @@ export default function TableResult() {
   const dateOptions = healthMetricsList
     .map((metric) => ({
       id: metric.id,
-      date: new Date(metric.createdAt).toISOString().split('T')[0],
+      date: metric.createdAt, // ใช้ createdAt ดั้งเดิมสำหรับการเรียงลำดับ
+      displayDate: new Date(metric.createdAt).toLocaleDateString(), // ใช้ toLocaleDateString() สำหรับแสดงผล
     }))
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
+    .sort((a, b) => new Date(b.date) - new Date(a.date)); // เรียงลำดับจากวันที่ใหม่ไปเก่า
 
   useEffect(() => {
     if (dateOptions.length > 0 && !selectedDate) {
@@ -180,7 +181,9 @@ export default function TableResult() {
       <>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="">บันทึกข้อมูลสุขภาพ</Button>
+            <Button variant="" className="bg-black text-white">
+              บันทึกข้อมูลสุขภาพ
+            </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogTitle>บันทึกข้อมูลสุขภาพ</DialogTitle>
@@ -302,17 +305,17 @@ export default function TableResult() {
     status === 'authenticated' &&
     session.user && (
       <>
-        <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl  ">
-          <div className="">
+        <div className="container text-black bg-white shadow-md rounded-lg p-4 mx-auto mb-5 ">
+          <div className="mb-5">
             <select
               id="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border rounded-md p-2 w-full"
+              className="border bg-white rounded-md p-2 w-full"
             >
               {dateOptions.map((option) => (
                 <option key={option.id} value={option.id}>
-                  {option.date}
+                  {option.displayDate}
                 </option>
               ))}
             </select>
@@ -334,11 +337,15 @@ export default function TableResult() {
                         dietTypeMapping[selectedMetrics[key]]}
                       {key === 'activityLevel' &&
                         activityLevelMapping[selectedMetrics[key]]}
+                      {key === 'weight' && `${selectedMetrics[key]} กก.`}{' '}
+                      {key === 'height' && `${selectedMetrics[key]} ซม.`}{' '}
                       {![
                         'gender',
                         'goal',
                         'dietType',
                         'activityLevel',
+                        'weight',
+                        'height',
                       ].includes(key) && selectedMetrics[key]}
                     </TableCell>
                   </TableRow>
@@ -348,7 +355,9 @@ export default function TableResult() {
                   <TableCell>
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="">บันทึกข้อมูลสุขภาพ</Button>
+                        <Button variant="" className="bg-black text-white">
+                          บันทึกข้อมูลสุขภาพ
+                        </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-lg">
                         <DialogTitle>บันทึกข้อมูลสุขภาพ</DialogTitle>
@@ -493,7 +502,7 @@ export default function TableResult() {
             </div>
           )}
         </div>
-        <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl ">
+        <div className="container text-black bg-white shadow-md rounded-lg p-4 mx-auto mb-5 ">
           {selectedMetrics ? (
             <Table>
               <TableBody>
@@ -504,7 +513,14 @@ export default function TableResult() {
                     </TableCell>
                     <TableCell className="w-[50px]">:</TableCell>
                     <TableCell className="min-w-[100px]">
-                      {selectedMetrics[key]}
+                      {key === 'dailySurplus' &&
+                        `${selectedMetrics[key]} กิโลแคลอรี่`}
+                      {key === 'bodyFat' && `${selectedMetrics[key]}%`}
+                      {key === 'fatMass' && `${selectedMetrics[key]} กิโลกรัม`}
+                      {key === 'leanMass' && `${selectedMetrics[key]} กิโลกรัม`}
+                      {key === 'bmi' && `${selectedMetrics[key]}`}
+                      {key === 'bmr' && `${selectedMetrics[key]} กิโลแคลอรี่`}
+                      {key === 'tdee' && `${selectedMetrics[key]} กิโลแคลอรี่`}
                     </TableCell>
                   </TableRow>
                 ))}
