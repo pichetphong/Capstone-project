@@ -51,7 +51,6 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
   };
 
   const handleConfirmSelection = () => {
-    // console.log('Selected Ingredients:', selectedIngredients);
     setSelectedItems(selectedIngredients);
     setSelectedIngredients([]);
     setSelectedCategory(null);
@@ -100,13 +99,16 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
           open={!!selectedCategory}
           onOpenChange={() => setSelectedCategory(null)}
         >
-          <DialogContent className="max-w-lg h-[625px] overflow-auto rounded-lg">
+          <DialogContent className="max-w-lg h-[625px] overflow-auto rounded-lg ">
             <DialogTitle className="text-xl font-bold">
               {selectedCategory}
             </DialogTitle>
             <DialogDescription>
               กรุณาเลือกวัตถุดิบที่ต้องการเพิ่ม
             </DialogDescription>
+            <div className="mt-4 flex justify-start">
+              <Button onClick={handleConfirmSelection}>ตกลง</Button>
+            </div>
 
             {loading ? (
               <FaSpinner className=" animate-spin text-4xl" />
@@ -117,10 +119,10 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
                   .map((item, index) => (
                     <div
                       key={index}
-                      className={`flex flex-col items-center cursor-pointer ${
+                      className={`flex flex-col items-center cursor-pointer p-3 rounded-lg transition-colors ${
                         selectedIngredients.includes(item)
-                          ? 'border-2 border-maroon'
-                          : ''
+                          ? 'border-2 border-primary bg-primary/10'
+                          : 'border border-gray-200 hover:bg-gray-50'
                       }`}
                       onClick={() => toggleIngredientSelection(item)}
                     >
@@ -130,14 +132,15 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
                         className="w-24 h-24 object-cover rounded-lg shadow-md"
                       />
                       <span className="mt-2 font-medium">{item.name}</span>
+                      {selectedIngredients.includes(item) && (
+                        <span className="mt-1 text-xs px-2 py-1 bg-primary text-white rounded-full">
+                          เลือกแล้ว
+                        </span>
+                      )}
                     </div>
                   ))}
               </div>
             )}
-
-            <div className="mt-4 flex justify-end">
-              <Button onClick={handleConfirmSelection}>ตกลง</Button>
-            </div>
           </DialogContent>
         </Dialog>
       )}
