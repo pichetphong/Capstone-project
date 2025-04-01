@@ -39,9 +39,6 @@ export default function profile() {
                 <TableProfile />
               </div>
               <div>
-                <h1 className="text-2xl md:text-6xl font-bold mb-4 ">
-                  ข้อมูลสุขภาพ
-                </h1>
                 <TableResult />
               </div>
             </div>

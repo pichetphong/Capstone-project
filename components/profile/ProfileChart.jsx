@@ -6,6 +6,7 @@ import WeightChart from '../Chart/WeightChart';
 import FatLeanChart from '../Chart/FatLeanChart';
 import BodyFatChart from '../Chart/BodyFatChart';
 import KcalChart from '../Chart/KcalChart';
+import StateChart from '../Chart/StateChart';
 import { FaSpinner } from 'react-icons/fa';
 
 export default function ProfileChart() {
@@ -48,19 +49,22 @@ export default function ProfileChart() {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto">
       <div className="grid grid-cols-1 gap-4">
         <div className="bg-white shadow-md rounded-lg p-4 w-full ">
-          <WeightChart userData={userData} />
+          <StateChart userData={userData} />
+        </div>
+        <div className="bg-white shadow-md rounded-lg p-4 w-full ">
+          <KcalChart userData={userData} />
         </div>
         <div className="bg-white shadow-md rounded-lg p-4 w-full ">
           <FatLeanChart userData={userData} />
         </div>
         <div className="bg-white shadow-md rounded-lg p-4 w-full ">
-          <BodyFatChart userData={userData} />
+          <WeightChart userData={userData} />
         </div>
         <div className="bg-white shadow-md rounded-lg p-4 w-full ">
-          <KcalChart userData={userData} />
+          <BodyFatChart userData={userData} />
         </div>
       </div>
     </div>

@@ -47,8 +47,8 @@ export default function FatLeanChart({ userData }) {
       {
         label: 'มวลไขมัน (กก.)',
         data: sortedMetrics.map((metric) => metric.fatMass),
-        borderColor: '#183B4E',
-        backgroundColor: 'rgba(24, 59, 78, 0.2)',
+        borderColor: '#DDA853',
+        backgroundColor: 'rgba(221, 168, 83, 0.2)',
         tension: 0.2,
       },
     ],
