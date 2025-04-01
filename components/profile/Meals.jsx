@@ -82,7 +82,7 @@ export default function Meals() {
   return (
     status === 'authenticated' &&
     session.user && (
-      <div className="container bg-gray-400 bg-opacity-50 mx-auto mb-5 p-5 rounded-xl  ">
+      <div className="container  mx-auto mb-5 p-5 rounded-xl  ">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4">
           {Object.entries(meals).map(([day, dayMeals]) => (
             <div key={day}>
@@ -114,7 +114,7 @@ export default function Meals() {
                               <div className="font-medium ">🔥 Calories:</div>
                               <div className="">{meal.calories}</div>
 
-                              <div className="font-medium ">💪 Protein:</div>
+                              <div className="font-medium ">🥚 Protein:</div>
                               <div className="">{meal.protein}g</div>
 
                               <div className="font-medium ">🥑 Fat:</div>

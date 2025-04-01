@@ -5,14 +5,7 @@ import { Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Button } from '../../components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../../components/ui/table';
+import Meals from '../../components/profile/Meals';
 import IngredientsModal from '../../components/meals/IngredientsModal';
 import { FaSpinner } from 'react-icons/fa';
 
@@ -186,6 +179,11 @@ export default function PlanMeals() {
               </div>
             </div>
           )}
+
+          <div className="">
+            <h1 className="text-2xl md:text-6xl font-bold mb-4 ">เมนูอาหาร</h1>
+            <Meals />
+          </div>
         </section>
       </>
     )
