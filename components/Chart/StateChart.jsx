@@ -28,7 +28,7 @@ export default function StateChart({ userData }) {
 
   // ใช้ข้อมูลล่าสุดและข้อมูลก่อนหน้า
   const latestMetrics = userData[userData.length - 1];
-  const previousMetrics = userData[userData.length - 2];
+  const previousMetrics = userData[0];
 
   // กราฟแรก: dailySurplus, tdee, bmr
   const chartData1 = {
@@ -46,7 +46,7 @@ export default function StateChart({ userData }) {
         pointBackgroundColor: 'rgba(39, 84, 138, 1)',
       },
       {
-        label: 'ค่าก่อนหน้า',
+        label: 'ค่าครั้งแรก',
         data: [
           previousMetrics.dailySurplus,
           previousMetrics.tdee,
@@ -75,7 +75,7 @@ export default function StateChart({ userData }) {
         pointBackgroundColor: 'rgba(39, 84, 138, 1)',
       },
       {
-        label: 'ค่าก่อนหน้า',
+        label: 'ค่าครั้งแรก',
         data: [
           previousMetrics.weight,
           previousMetrics.fatMass,
@@ -104,7 +104,7 @@ export default function StateChart({ userData }) {
           display: true,
         },
         pointLabels: {
-          display: false, // ปิดตัวเลขรอบกราฟ
+          display: true, // ปิดตัวเลขรอบกราฟ
         },
         suggestedMin: 0,
       },

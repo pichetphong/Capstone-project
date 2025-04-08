@@ -113,9 +113,13 @@ export default function PlanMeals() {
     session.user && (
       <>
         {loading && (
-          <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-50 flex justify-center items-center z-50">
-            <FaSpinner className="text-white animate-spin text-4xl" />
-            <p className="ms-5">กำลังสร้างแพลนอาหาร....</p>
+          <div className="fixed top-0 left-0 w-full h-full bg-gray-700 bg-opacity-75 flex flex-col justify-center items-center z-50">
+            <img
+              src="/images/gif/gibi.gif"
+              alt="Loading..."
+              className="w-[300px] h-[200px] rounded-xl"
+            />
+            <p className="mt-4 text-white">กำลังวางแพลนอาหาร....</p>
           </div>
         )}
 
@@ -180,7 +184,7 @@ export default function PlanMeals() {
               </div>
             </div>
 
-            <div className="md:w-2/3 p-4 bg-gray-50 rounded-lg">
+            <div className="md:w-2/3 text-black p-4 bg-gray-50 rounded-lg">
               <h2 className="text-xl font-bold mb-4">
                 2. จัดสรรวัตถุดิบตามวัน
               </h2>
@@ -190,7 +194,7 @@ export default function PlanMeals() {
                   <Button
                     key={day}
                     size="sm"
-                    variant={selectedDay === day ? 'default' : 'outline'}
+                    variant={selectedDay === day ? 'default' : 'secondary'}
                     onClick={() => setSelectedDay(day)}
                     className={`${
                       planStatus[day] ? 'border-green-500' : ''

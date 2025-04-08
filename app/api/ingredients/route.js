@@ -33,49 +33,64 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    const { name, calories, protein, fat, carbohydrates, categories, image } =
-      body;
+    // ตรวจสอบว่าข้อมูลที่ส่งมาเป็นอาร์เรย์หรือไม่
+    const ingredients = Array.isArray(body) ? body : [body];
 
-    if (!name || !calories || !protein || !fat || !carbohydrates) {
-      return new Response(
-        JSON.stringify({
-          error:
-            'Missing required fields: name, calories, protein, fat and carbohydrates',
-        }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+    const createdIngredients = [];
+
+    for (const ingredient of ingredients) {
+      const { name, calories, protein, fat, carbohydrates, categories, image } =
+        ingredient;
+
+      if (
+        !name ||
+        calories == null ||
+        protein == null ||
+        fat == null ||
+        carbohydrates == null
+      ) {
+        return new Response(
+          JSON.stringify({
+            error:
+              'Missing required fields: name, calories, protein, fat and carbohydrates',
+          }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const existingIngredient = await prisma.ingredients.findFirst({
+        where: { name },
+      });
+
+      if (existingIngredient) {
+        console.log('Ingredient already exists:', existingIngredient.name);
+        return new Response(
+          JSON.stringify({ error: `Ingredient "${name}" already exists` }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const newIngredient = await prisma.ingredients.create({
+        data: {
+          name,
+          calories: parseFloat(calories),
+          protein: parseFloat(protein),
+          fat: parseFloat(fat),
+          carbohydrates: parseFloat(carbohydrates),
+          categories: categories,
+          image: image,
+        },
+      });
+
+      createdIngredients.push(newIngredient);
     }
 
-    const existingIngredient = await prisma.ingredients.findFirst({
-      where: { name },
-    });
-
-    if (existingIngredient) {
-      console.log('Ingredient already exists:', existingIngredient.name);
-      return new Response(
-        JSON.stringify({ error: 'Ingredient already exists' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const newIngredient = await prisma.ingredients.create({
-      data: {
-        name,
-        calories: parseFloat(calories),
-        protein: parseFloat(protein),
-        fat: parseFloat(fat),
-        carbohydrates: parseFloat(carbohydrates),
-        categories: categories,
-        image: image,
-      },
-    });
-
-    console.log('New Ingredient Created:', newIngredient);
+    console.log('New Ingredients Created:', createdIngredients);
 
     return new Response(
       JSON.stringify({
-        message: 'Added new ingredient successfully',
-        data: newIngredient,
+        message: 'Added new ingredients successfully',
+        data: createdIngredients,
       }),
       { status: 201, headers: { 'Content-Type': 'application/json' } }
     );

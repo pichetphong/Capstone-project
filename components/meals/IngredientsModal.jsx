@@ -99,7 +99,7 @@ export default function IngredientsModal({ open, setOpen, setSelectedItems }) {
           open={!!selectedCategory}
           onOpenChange={() => setSelectedCategory(null)}
         >
-          <DialogContent className="max-w-lg h-[625px] overflow-auto rounded-lg ">
+          <DialogContent className="max-w-lg h-auto max-h-[550px] overflow-auto rounded-lg ">
             <DialogTitle className="text-xl font-bold">
               {selectedCategory}
             </DialogTitle>
