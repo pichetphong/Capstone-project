@@ -47,14 +47,6 @@ export default function profile() {
               <ProfileChart />
             </div>
           </div>
-          {/* <div className="">
-            <Link href="/planmeals">
-              <h1 className="text-2xl md:text-6xl font-bold mb-4 ">
-                เมนูอาหาร
-              </h1>
-            </Link>
-            <Meals />
-          </div> */}
         </section>
       </>
     )

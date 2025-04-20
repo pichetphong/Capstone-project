@@ -51,21 +51,29 @@ export default function ProfileChart() {
   return (
     <div className="container mx-auto">
       <div className="grid grid-cols-1 gap-4">
-        <div className="bg-white shadow-md rounded-lg p-4 w-full ">
-          <StateChart userData={userData} />
-        </div>
-        <div className="bg-white shadow-md rounded-lg p-4 w-full ">
-          <KcalChart userData={userData} />
-        </div>
-        <div className="bg-white shadow-md rounded-lg p-4 w-full ">
-          <FatLeanChart userData={userData} />
-        </div>
-        <div className="bg-white shadow-md rounded-lg p-4 w-full ">
-          <WeightChart userData={userData} />
-        </div>
-        <div className="bg-white shadow-md rounded-lg p-4 w-full ">
-          <BodyFatChart userData={userData} />
-        </div>
+        {userData && userData.length > 0 && (
+          <>
+            <div className="bg-white shadow-md rounded-lg p-4 w-full">
+              <StateChart userData={userData} />
+            </div>
+
+            <div className="bg-white shadow-md rounded-lg p-4 w-full">
+              <KcalChart userData={userData} />
+            </div>
+
+            <div className="bg-white shadow-md rounded-lg p-4 w-full">
+              <FatLeanChart userData={userData} />
+            </div>
+
+            <div className="bg-white shadow-md rounded-lg p-4 w-full">
+              <WeightChart userData={userData} />
+            </div>
+
+            <div className="bg-white shadow-md rounded-lg p-4 w-full">
+              <BodyFatChart userData={userData} />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
